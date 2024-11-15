@@ -1,5 +1,6 @@
 package at.schrer.inject;
 
+import at.schrer.inject.blueprints.ComponentBluePrint;
 import at.schrer.inject.dummyclasses.name.NamedDummy;
 import at.schrer.inject.dummyclasses.name.NoNameDummy;
 import org.junit.jupiter.api.Test;

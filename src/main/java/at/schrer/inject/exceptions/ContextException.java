@@ -1,4 +1,4 @@
-package at.schrer.inject;
+package at.schrer.inject.exceptions;
 
 public class ContextException extends RuntimeException {
     public ContextException(String message) {

@@ -1,4 +1,6 @@
-package at.schrer.inject;
+package at.schrer.inject.blueprints;
+
+import at.schrer.inject.exceptions.ContextException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;

@@ -1,5 +1,6 @@
-package at.schrer.inject;
+package at.schrer.inject.blueprints;
 
+import at.schrer.inject.exceptions.ComponentInstantiationException;
 import at.schrer.inject.annotations.Component;
 import at.schrer.inject.utils.StringUtils;
 

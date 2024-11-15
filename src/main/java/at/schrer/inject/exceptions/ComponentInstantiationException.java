@@ -1,4 +1,4 @@
-package at.schrer.inject;
+package at.schrer.inject.exceptions;
 
 public class ComponentInstantiationException extends RuntimeException {
     public ComponentInstantiationException(String message) {

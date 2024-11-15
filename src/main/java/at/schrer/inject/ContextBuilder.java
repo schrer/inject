@@ -1,6 +1,9 @@
 package at.schrer.inject;
 
 import at.schrer.inject.annotations.Component;
+import at.schrer.inject.blueprints.ComponentBluePrint;
+import at.schrer.inject.exceptions.ComponentInstantiationException;
+import at.schrer.inject.exceptions.ContextException;
 import at.schrer.inject.structures.SomeAcyclicGraph;
 
 import java.io.IOException;

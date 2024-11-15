@@ -1,4 +1,4 @@
-package at.schrer.inject;
+package at.schrer.inject.blueprints;
 
 import java.util.Optional;
 
