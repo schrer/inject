@@ -2,6 +2,7 @@ package at.schrer.inject;
 
 import at.schrer.inject.annotations.Component;
 import at.schrer.inject.blueprints.ComponentBluePrint;
+import at.schrer.inject.blueprints.ComponentConstructor;
 import at.schrer.inject.exceptions.ComponentInstantiationException;
 import at.schrer.inject.exceptions.ContextException;
 import at.schrer.inject.structures.SomeAcyclicGraph;
@@ -249,8 +250,8 @@ public class ContextBuilder {
             return Optional.of(List.of());
         }
 
-        List<ComponentBluePrint.ComponentConstructor<Class<?>>> constructors = bluePrint.getConstructors();
-        for (ComponentBluePrint.ComponentConstructor<Class<?>> constructor : constructors) {
+        List<ComponentConstructor<Class<?>>> constructors = bluePrint.getConstructors();
+        for (ComponentConstructor<Class<?>> constructor : constructors) {
             var result = resolveConstructorDependencies(constructor);
             if(result.isPresent()) {
                 return result;
@@ -260,7 +261,7 @@ public class ContextBuilder {
     }
 
     private Optional<List<ComponentBluePrint<Class<?>>>> resolveConstructorDependencies(
-            ComponentBluePrint.ComponentConstructor<Class<?>> constructor
+            ComponentConstructor<Class<?>> constructor
     ){
         List<Class<?>> dependencies = constructor.getDependencies();
         List<ComponentBluePrint<Class<?>>> deps = dependencies.stream()
@@ -287,7 +288,7 @@ public class ContextBuilder {
             return Optional.of(blueprint.getNoArgsInstance());
         }
 
-        List<ComponentBluePrint.ComponentConstructor<Class<?>>> constructors = blueprint.getConstructors();
+        List<ComponentConstructor<Class<?>>> constructors = blueprint.getConstructors();
         for (var constructor : constructors) {
             List<Class<?>> dependencies = constructor.getDependencies();
             List<Object> instances = dependencies.stream()

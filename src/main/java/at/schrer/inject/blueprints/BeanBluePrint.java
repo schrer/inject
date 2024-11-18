@@ -15,9 +15,15 @@ public interface BeanBluePrint<T> {
      */
     boolean canBeDependencyLess();
 
+    /**
+     * Checks if the blueprint describes a class that is the same or a subclass of the provided class parameter.
+     *
+     * @param clazz the class object to be checked
+     * @return true if the blueprints class is the same or subclass of the provided class.
+     */
     boolean isMatchingClass(Class<?> clazz);
 
-    boolean isSameClass(Class<?> clazz);
+    //boolean isMatchingDescriptor(BeanDescriptor clazz);
 
     T getNoArgsInstance()
             throws InvocationTargetException, InstantiationException, IllegalAccessException;

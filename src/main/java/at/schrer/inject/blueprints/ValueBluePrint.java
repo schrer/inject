@@ -5,18 +5,16 @@ import java.util.Optional;
 public class ValueBluePrint<T> implements BeanBluePrint<T> {
 
     private final T value;
-    private final Class<T> valueClass;
-    private final String valueAlias;
+    private final BeanDescriptor<T> beanDescriptor;
 
     public ValueBluePrint(String alias, T value) {
         this.value = value;
-        this.valueClass = (Class<T>) value.getClass();
-        this.valueAlias = alias;
+        this.beanDescriptor = new BeanDescriptor<>(alias, (Class<T>) value.getClass());
     }
 
     @Override
     public Optional<String> getBeanAlias() {
-        return Optional.of(this.valueAlias);
+        return Optional.of(this.beanDescriptor.beanAlias());
     }
 
     @Override
@@ -26,12 +24,7 @@ public class ValueBluePrint<T> implements BeanBluePrint<T> {
 
     @Override
     public boolean isMatchingClass(Class<?> clazz) {
-        return clazz.isAssignableFrom(this.valueClass);
-    }
-
-    @Override
-    public boolean isSameClass(Class<?> clazz) {
-        return this.valueClass == clazz;
+        return clazz.isAssignableFrom(this.beanDescriptor.beanClass());
     }
 
     @Override
