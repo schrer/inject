@@ -1,28 +1,30 @@
 package at.schrer.inject;
 
-import at.schrer.inject.dummyclasses.depless.Component1;
-import at.schrer.inject.dummyclasses.depless.Component2;
-import at.schrer.inject.dummyclasses.depless.NonComponent1;
-import at.schrer.inject.dummyclasses.interfaces.*;
-import at.schrer.inject.dummyclasses.yesdeps.DepComp1;
-import at.schrer.inject.dummyclasses.yesdeps.DepComp2;
-import at.schrer.inject.dummyclasses.yesdeps.DepComp4;
+import at.schrer.inject.dummyclasses.safe.depless.Component1;
+import at.schrer.inject.dummyclasses.safe.depless.Component2;
+import at.schrer.inject.dummyclasses.safe.depless.NonComponent1;
+import at.schrer.inject.dummyclasses.safe.interdep.pack1.Pack1Class1;
+import at.schrer.inject.dummyclasses.safe.interdep.pack1.Pack1Class2;
+import at.schrer.inject.dummyclasses.safe.interdep.pack2.Pack2Class1;
+import at.schrer.inject.dummyclasses.safe.interdep.pack2.Pack2Class2;
+import at.schrer.inject.dummyclasses.safe.interfaces.*;
+import at.schrer.inject.dummyclasses.safe.name.NamedDummy;
+import at.schrer.inject.dummyclasses.safe.yesdeps.DepComp1;
+import at.schrer.inject.dummyclasses.safe.yesdeps.DepComp2;
+import at.schrer.inject.dummyclasses.safe.yesdeps.DepComp4;
 import at.schrer.inject.exceptions.ContextException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import static at.schrer.inject.TestConstants.Packages.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ContextBuilderTest {
-
-    private static final String NO_DEP_DUMMY_PACKAGE = "at.schrer.inject.dummyclasses.depless";
-    private static final String NO_DEP_DUMMY_PACKAGE_SUB = "at.schrer.inject.dummyclasses.depless.sub";
-
-    private static final String YES_DEP_DUMMY_PACKAGE = "at.schrer.inject.dummyclasses.yesdeps";
-    private static final String MULTISTEP_CYCLE_DEP_DUMMY_PACKAGE = "at.schrer.inject.dummyclasses.multistepcycle";
-    private static final String CYCLE_DEP_DUMMY_PACKAGE = "at.schrer.inject.dummyclasses.cycledep";
-    private static final String INTERFACE_PACKAGE = "at.schrer.inject.dummyclasses.interfaces";
 
     @BeforeEach
     void cleanUpComponentLoaders(){
@@ -201,5 +203,98 @@ class ContextBuilderTest {
         DepComp2 depComp2 = contextBuilder.getComponent(DepComp2.class);
         // Then
         assertEquals(depComp1, depComp2.getDep());
+    }
+
+    @Test
+    void severalContextsWithInterdep(){
+        // Given
+        ContextBuilder contextBuilder = ContextBuilder.getContextInstance(
+                INTERDEP_PACK1_PACKAGE, INTERDEP_PACK2_PACKAGE
+        );
+        // When
+        Pack1Class1 p1c1 = contextBuilder.getComponent(Pack1Class1.class);
+        Pack1Class2 p1c2 = contextBuilder.getComponent(Pack1Class2.class);
+        Pack2Class1 p2c1 = contextBuilder.getComponent(Pack2Class1.class);
+        Pack2Class2 p2c2 = contextBuilder.getComponent(Pack2Class2.class);
+        // Then
+        assertNotNull(p1c1);
+        assertNotNull(p1c2);
+        assertNotNull(p2c1);
+        assertNotNull(p2c2);
+    }
+
+    @Test
+    void nullElementInPackageSet(){
+        // Given
+        Set<String> packages = new HashSet<>();
+        packages.add("at.schrer.util");
+        packages.add(null);
+        packages.add("at.schrer.inject");
+
+        // When/Then
+        assertThrows(ContextException.class, () -> ContextBuilder.getContextInstance(packages));
+    }
+
+    @Test
+    void blankElementInPackageSet(){
+        // Given
+        Set<String> packages = Set.of("at.schrer.util", "   ", "at.schrer.inject");
+        // When/Then
+        assertThrows(ContextException.class, () -> ContextBuilder.getContextInstance(packages));
+    }
+
+    @Test
+    void emptyPackageSet(){
+        // Given
+        Set<String> packages = Set.of();
+        // When/Then
+        assertThrows(ContextException.class, () -> ContextBuilder.getContextInstance(packages));
+    }
+
+    @Test
+    void emptyPackageArray(){
+        assertThrows(ContextException.class, ContextBuilder::getContextInstance);
+    }
+
+    @Test
+    void bigContext(){
+        // Given
+        ContextBuilder contextBuilder = ContextBuilder.getContextInstance(SAFE_PACKAGE);
+        // When
+        var comp1 = contextBuilder.getComponent(Component2.class);
+        var comp2 = contextBuilder.getComponent(Pack1Class2.class);
+        var comp3 = contextBuilder.getComponent(Pack1Class2.class);
+        var comp4 = contextBuilder.getComponent(NamedDummy.class);
+        // Then
+        assertNotNull(comp1);
+        assertNotNull(comp2);
+        assertNotNull(comp3);
+        assertNotNull(comp4);
+    }
+
+    @Test
+    @DisplayName("Calling getContextInstance with same package should return the same builder")
+    void severalContextBuilders(){
+        // Given
+        Set<String> packSet1 = Set.of(YES_DEP_DUMMY_PACKAGE);
+        Set<String> packSet2 = Set.of(YES_DEP_DUMMY_PACKAGE, INTERDEP_PACKAGE);
+        Set<String> packSet3 = Set.of("com.example");
+        // When
+        var builder1Set1 = ContextBuilder.getContextInstance(packSet1);
+        var builder2Set1 = ContextBuilder.getContextInstance(packSet1);
+        var builder1Set2 = ContextBuilder.getContextInstance(packSet2);
+        var builder2Set2 = ContextBuilder.getContextInstance(packSet2);
+        var builder1Set3 = ContextBuilder.getContextInstance(packSet3);
+        var builder2Set3 = ContextBuilder.getContextInstance(packSet3);
+        // Then
+        assertNotNull(builder1Set1);
+        assertNotNull(builder1Set2);
+        assertNotNull(builder1Set3);
+        assertSame(builder1Set1, builder2Set1);
+        assertSame(builder1Set2, builder2Set2);
+        assertSame(builder1Set3, builder2Set3);
+        assertNotSame(builder1Set1, builder1Set2);
+        assertNotSame(builder1Set1, builder1Set3);
+        assertNotSame(builder1Set2, builder1Set3);
     }
 }

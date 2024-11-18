@@ -1,21 +1,21 @@
 package at.schrer.inject;
 
 import at.schrer.inject.annotations.Component;
-import at.schrer.inject.dummyclasses.depless.Component1;
-import at.schrer.inject.dummyclasses.depless.Component2;
-import at.schrer.inject.dummyclasses.depless.NonComponent1;
-import at.schrer.inject.dummyclasses.depless.sub.Component3;
-import at.schrer.inject.dummyclasses.depless.sub.NonComponent2;
+import at.schrer.inject.dummyclasses.safe.depless.Component1;
+import at.schrer.inject.dummyclasses.safe.depless.Component2;
+import at.schrer.inject.dummyclasses.safe.depless.NonComponent1;
+import at.schrer.inject.dummyclasses.safe.depless.sub.Component3;
+import at.schrer.inject.dummyclasses.safe.depless.sub.NonComponent2;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import static at.schrer.inject.TestConstants.Packages.NO_DEP_DUMMY_PACKAGE;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ClassScannerTest {
-    private static final String NO_DEP_DUMMY_PACKAGE = "at.schrer.inject.dummyclasses.depless";
 
     @Test
     void loadAllClasses() throws IOException, URISyntaxException, ClassNotFoundException {

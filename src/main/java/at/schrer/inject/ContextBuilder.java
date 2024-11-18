@@ -25,23 +25,25 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ContextBuilder {
 
-    private static final Map<String, ContextBuilder> loadedBuilders = new ConcurrentHashMap<>();
+    private static final Map<Set<String>, ContextBuilder> loadedBuilders = new ConcurrentHashMap<>();
 
     private final Map<Class<?>, Object> componentInstances;
 
     private final SomeAcyclicGraph<ComponentBluePrint<Class<?>>> componentGraph;
 
-    // TODO support several package paths
-    private ContextBuilder(String packagePath) throws ContextException {
+    private ContextBuilder(Set<String> packagePaths) throws ContextException {
         this.componentInstances = new HashMap<>();
         this.componentGraph = new SomeAcyclicGraph<>();
 
-        final ClassScanner classScanner = new ClassScanner(packagePath);
-        List<Class<?>> components;
-        try {
-            components = new ArrayList<>(classScanner.findByAnnotation(Component.class));
-        } catch (IOException | URISyntaxException | ClassNotFoundException e) {
-            throw new ContextException("Unable to load context.", e);
+        List<Class<?>> components = new LinkedList<>();
+
+        for (String packagePath: packagePaths) {
+            final ClassScanner classScanner = new ClassScanner(packagePath);
+            try {
+                components.addAll(classScanner.findByAnnotation(Component.class));
+            } catch (IOException | URISyntaxException | ClassNotFoundException e) {
+                throw new ContextException("Unable to load classes for package " + packagePath, e);
+            }
         }
 
         final Set<ComponentBluePrint<Class<?>>> bluePrints = new HashSet<>();
@@ -79,7 +81,6 @@ public class ContextBuilder {
         if (!bluePrints.isEmpty()) {
             throw new ContextException("Unable to resolve dependencies for " + bluePrints.size() + " components.");
         }
-
     }
 
     /**
@@ -173,26 +174,46 @@ public class ContextBuilder {
         }
     }
 
-
-
     /**
-     * Get a ContextBuilder instance for the given package.
+     * Get a ContextBuilder instance for the given set of packages.
+     * At least one needs to be provided, all package paths must be unique.
      *
-     * @param packagePath the package to scan for components.
-     * @return a ContextBuilder instance, initialized on the given package.
+     * @param packagePaths the packages to scan for components.
+     * @return a ContextBuilder instance, initialized on the given packages.
      * @throws ContextException if an error happens while trying to load the components of the given package.
      */
-    public static ContextBuilder getContextInstance(String packagePath) throws ContextException {
-        if (loadedBuilders.containsKey(packagePath)) {
-            return loadedBuilders.get(packagePath);
+    public static ContextBuilder getContextInstance(String... packagePaths) throws ContextException {
+        return getContextInstance(Set.of(packagePaths));
+    }
+
+    /**
+     * Get a ContextBuilder instance for the given set of packages.
+     * If the set is empty or null an exception is thrown. Same goes for null or empty string elements in the set.
+     *
+     * @param packagePaths the packages to scan for components.
+     * @return a ContextBuilder instance, initialized on the given packages.
+     * @throws ContextException if an error happens while trying to load the components of the given package.
+     */
+    public static ContextBuilder getContextInstance(Set<String> packagePaths) throws ContextException {
+        if (packagePaths == null || packagePaths.isEmpty()) {
+            throw new ContextException("At least one package path needs to be provided.");
+        }
+        for (String path : packagePaths) {
+            if (path == null || path.isBlank()) {
+                throw new ContextException("One of the package paths is null or blank. This is not allowed.");
+            }
+        }
+
+        if (loadedBuilders.containsKey(packagePaths)) {
+            return loadedBuilders.get(packagePaths);
         }
 
         synchronized (loadedBuilders) {
-            if (loadedBuilders.containsKey(packagePath)) {
-                return loadedBuilders.get(packagePath);
+            if (loadedBuilders.containsKey(packagePaths)) {
+                return loadedBuilders.get(packagePaths);
             }
-            ContextBuilder newBuilder = new ContextBuilder(packagePath);
-            loadedBuilders.put(packagePath, newBuilder);
+            ContextBuilder newBuilder = new ContextBuilder(packagePaths);
+            loadedBuilders.put(packagePaths, newBuilder);
             return newBuilder;
         }
     }
