@@ -9,6 +9,7 @@ Basic features and restrictions are:
 - Constructor injection of other Components
 - No field injection
 - Failing early when context is inconsistent or contains cyclic dependencies
+- Reuse of ContextBuilders with same package name coverage
 - Singleton scope for all components
 - Interfaces and abstract classes supported for requesting instances
 
@@ -18,7 +19,7 @@ Mark your classes with the annotation [@Component](./src/main/java/at/schrer/inj
 
 ```java
 // Create context once
-ContextBuilder contextBuilder = ContextBuilder.getContextInstance("at.schrer.inject");
+ContextBuilder contextBuilder = ContextBuilder.getContextInstance("at.schrer.inject", "at.schrer.example", "at.schrer.util");
 
 // Request instances
 YourService service1 = contextBuilder.getComponent(YourService.class);
