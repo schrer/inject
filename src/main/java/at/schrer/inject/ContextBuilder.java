@@ -90,7 +90,7 @@ public class ContextBuilder {
      * @param componentClass the class of the component
      * @return an instance of the component
      * @param <T> the type of the component
-     * @throws ContextException if the class is not known component within the context or cannot be created for other reasons.
+     * @throws ContextException if the class is not a known component within the context or cannot be created for other reasons.
      */
     public <T> T getComponent(Class<T> componentClass) throws ContextException {
         // TODO support names
@@ -101,22 +101,34 @@ public class ContextBuilder {
 
         Optional<ComponentBluePrint<Class<?>>> bluePrintOptional = componentGraph.find(it -> it.isMatchingClass(componentClass));
         if (bluePrintOptional.isEmpty()) {
-            throw new ContextException("Class not in context: " + componentClass.getName());
+            throw new ContextException("Class not found in context: " + componentClass.getName());
         }
 
         ComponentBluePrint<Class<?>> bluePrint = bluePrintOptional.get();
+        createInstanceFromBlueprint(bluePrint);
 
-        if (bluePrint.canBeDependencyLess()) {
-            Object instance = bluePrint.getNoArgsInstance();
-            componentInstances.put(instance.getClass(), instance);
-        }
+        // Store the resolved instance for the requested class
+        return (T) findMatchingInstance(bluePrint.getComponentClass()).get();
+    }
 
-        Deque<ComponentBluePrint<Class<?>>> stack = new LinkedList<>();
-
-        // Initialize stack with the root blueprint
-        stack.push(bluePrint);
-
+    /**
+     * Creates an instance of a class from a blueprint and adds it to the available loaded instances. All direct and transitive dependencies are built and added to the loaded instances as well.
+     *
+     * @param bluePrint the blueprint that should be built.
+     * @throws ContextException if the class is not a known component within the context or cannot be created for other reasons.
+     */
+    private void createInstanceFromBlueprint(ComponentBluePrint<Class<?>> bluePrint) throws ContextException {
         try {
+            if (bluePrint.canBeDependencyLess()) {
+                Object instance = bluePrint.getNoArgsInstance();
+                componentInstances.put(instance.getClass(), instance);
+            }
+
+            Deque<ComponentBluePrint<Class<?>>> stack = new LinkedList<>();
+
+            // Initialize stack with the root blueprint
+            stack.push(bluePrint);
+
             while (!stack.isEmpty()) {
                 ComponentBluePrint<Class<?>> current = stack.peek();
 
@@ -166,11 +178,8 @@ public class ContextBuilder {
                     componentInstances.put(instance.getClass(), instance);
                 }
             }
-
-            // Store the resolved instance for the requested class
-            return (T) findMatchingInstance(bluePrint.getComponentClass()).get();
         } catch (ComponentInstantiationException e) {
-            throw new ContextException("Failed to create instance of class " + componentClass.getName(), e);
+            throw new ContextException("Failed to create instance of class " + bluePrint.getComponentClass().getName(), e);
         }
     }
 

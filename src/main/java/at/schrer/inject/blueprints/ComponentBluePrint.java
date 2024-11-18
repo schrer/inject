@@ -51,7 +51,7 @@ public class ComponentBluePrint<T> implements BeanBluePrint<T>{
     @Override
     public T getNoArgsInstance() throws ComponentInstantiationException {
         if (noArgConstructor == null) {
-            throw new ComponentInstantiationException("No argument-less constructor available for this class.");
+            throw new ComponentInstantiationException("No argument-less constructor available for class " + this.getComponentClass().getName());
         }
 
         return noArgConstructor.getInstance();
@@ -63,7 +63,7 @@ public class ComponentBluePrint<T> implements BeanBluePrint<T>{
                 .filter(it -> it.matchesParameters(parameters))
                 .findFirst();
         if (constructor.isEmpty()) {
-            throw new ComponentInstantiationException("No matching constructor found for parameters");
+            throw new ComponentInstantiationException("No matching constructor found for class " + this.getComponentClass().getName() + " and parameters provided parameters");
         }
         return constructor.get().getInstance(parameters);
     }
