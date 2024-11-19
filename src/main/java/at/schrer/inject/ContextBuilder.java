@@ -8,6 +8,7 @@ import at.schrer.inject.constructors.BeanConstructor;
 import at.schrer.inject.exceptions.ComponentInstantiationException;
 import at.schrer.inject.exceptions.ContextException;
 import at.schrer.inject.structures.SomeAcyclicGraph;
+import at.schrer.inject.structures.Tuple;
 import at.schrer.inject.utils.StringUtils;
 
 import java.io.IOException;
@@ -181,7 +182,7 @@ public class ContextBuilder {
                     // Create instance for the current blueprint
                     Optional<Object> instanceOpt = buildIfPossible(current);
                     if (instanceOpt.isEmpty()) {
-                        throw new ContextException("Failed to instantiate " + current.getComponentClass() + ". This is a bug.");
+                        throw new ContextException("Failed to instantiate " + current.getBeanClass() + ". This is a bug.");
                     }
                     Object instance = instanceOpt.get();
 
@@ -189,7 +190,7 @@ public class ContextBuilder {
                 }
             }
         } catch (ComponentInstantiationException e) {
-            throw new ContextException("Failed to create instance of class " + bluePrint.getComponentClass().getName(), e);
+            throw new ContextException("Failed to create instance of class " + bluePrint.getBeanClass().getName(), e);
         }
     }
 
@@ -272,10 +273,10 @@ public class ContextBuilder {
     private Optional<List<BeanBluePrint<Class<?>>>> resolveConstructorDependencies(
             BeanConstructor<Class<?>> constructor
     ){
-        List<Class<?>> dependencies = constructor.getDependencies();
+        List<BeanDescriptor<Object>> dependencies = constructor.getBeanDependencies();
         List<BeanBluePrint<Class<?>>> deps = dependencies.stream()
                 .map(dep -> componentGraph.find(
-                        it -> it.isMatchingClass(dep)
+                        it -> it.satisfiesDescriptor(dep)
                 ).orElse(null))
                 .filter(Objects::nonNull)
                 .toList();
@@ -307,13 +308,13 @@ public class ContextBuilder {
         List<? extends BeanConstructor<Class<?>>> constructors = blueprint.getConstructors();
         for (var constructor : constructors) {
             List<BeanDescriptor<Object>> dependencies = constructor.getBeanDependencies();
-            List<Object> instances = dependencies.stream()
-                    .map(this::findMatchingInstance)
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
+            List<Tuple<BeanDescriptor<Object>,Object>> instances = dependencies.stream()
+                    .map(it -> new Tuple<>(it, findMatchingInstance(it)))
+                    .filter(it -> it.right().isPresent())
+                    .map(it -> new Tuple<>(it.left(), it.right().get()))
                     .toList();
             if (instances.size() == dependencies.size()) {
-                return Optional.of(constructor.getInstance(instances.toArray()));
+                return Optional.of(constructor.getInstance(instances));
             }
         }
         return Optional.empty();

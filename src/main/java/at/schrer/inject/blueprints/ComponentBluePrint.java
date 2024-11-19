@@ -3,6 +3,7 @@ package at.schrer.inject.blueprints;
 import at.schrer.inject.constructors.ComponentConstructor;
 import at.schrer.inject.exceptions.ComponentInstantiationException;
 import at.schrer.inject.annotations.Component;
+import at.schrer.inject.structures.Tuple;
 import at.schrer.inject.utils.StringUtils;
 
 import java.lang.reflect.Constructor;
@@ -44,19 +45,19 @@ public class ComponentBluePrint<T> implements BeanBluePrint<T>{
     @Override
     public T getNoArgsInstance() throws ComponentInstantiationException {
         if (noArgConstructor == null) {
-            throw new ComponentInstantiationException("No argument-less constructor available for class " + this.getComponentClass().getName());
+            throw new ComponentInstantiationException("No argument-less constructor available for class " + this.getBeanClass().getName());
         }
 
-        return noArgConstructor.getInstance();
+        return noArgConstructor.getInstance(List.of());
     }
 
     @Override
-    public T getInstance(Object... parameters) throws ComponentInstantiationException {
+    public T getInstance(List<Tuple<BeanDescriptor<Object>, Object>> parameters) throws ComponentInstantiationException {
         Optional<ComponentConstructor<T>> constructor = constructors.stream()
                 .filter(it -> it.matchesParameters(parameters))
                 .findFirst();
         if (constructor.isEmpty()) {
-            throw new ComponentInstantiationException("No matching constructor found for class " + this.getComponentClass().getName() + " and parameters provided parameters");
+            throw new ComponentInstantiationException("No matching constructor found for class " + this.getBeanClass().getName() + " and parameters provided parameters");
         }
         return constructor.get().getInstance(parameters);
     }
@@ -74,7 +75,7 @@ public class ComponentBluePrint<T> implements BeanBluePrint<T>{
     }
 
     @Override
-    public Class<T> getComponentClass(){
+    public Class<T> getBeanClass(){
         return this.beanDescriptor.beanClass();
     }
 

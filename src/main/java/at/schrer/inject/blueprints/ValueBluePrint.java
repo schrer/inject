@@ -1,6 +1,7 @@
 package at.schrer.inject.blueprints;
 
 import at.schrer.inject.constructors.ValueConstructor;
+import at.schrer.inject.structures.Tuple;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,7 +39,7 @@ public class ValueBluePrint implements BeanBluePrint<String> {
     }
 
     @Override
-    public String getInstance(Object... parameters) {
+    public String getInstance(List<Tuple<BeanDescriptor<Object>, Object>> parameters) {
         return value;
     }
 
@@ -48,7 +49,7 @@ public class ValueBluePrint implements BeanBluePrint<String> {
     }
 
     @Override
-    public Class<String> getComponentClass() {
+    public Class<String> getBeanClass() {
         return beanDescriptor.beanClass();
     }
 

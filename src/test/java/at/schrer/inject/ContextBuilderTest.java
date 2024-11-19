@@ -299,7 +299,7 @@ class ContextBuilderTest {
     }
 
     @Test
-    void matchByName(){
+    void getComponentByName(){
         // Given
         ContextBuilder contextBuilder = ContextBuilder.getContextInstance(NAMED_PACKAGE);
 
@@ -328,5 +328,26 @@ class ContextBuilderTest {
         assertThrows(ContextException.class, () -> contextBuilder.getComponent("wrongName", NamingInterface.class));
         assertThrows(ContextException.class, () -> contextBuilder.getComponent("wrongName", NoNameDummy.class));
         assertThrows(ContextException.class, () -> contextBuilder.getComponent("wrongName", NamedDummy.class));
+    }
+
+    @Test
+    void injectByName(){
+        // Given
+        ContextBuilder contextBuilder = ContextBuilder.getContextInstance(NAMED_PACKAGE);
+
+        // When
+        var usesNamedDummies = contextBuilder.getComponent(UsesNamedDummies.class);
+        var namedDummy = usesNamedDummies.getNamedDummy();
+        var moreNamedDummy = usesNamedDummies.getMoreNamedDummy();
+        var evenMoreNamedDummy = usesNamedDummies.getEvenMoreNamedDummy();
+        // Then
+        assertNotNull(usesNamedDummies);
+        assertNotNull(namedDummy);
+        assertNotNull(moreNamedDummy);
+        assertNotNull(evenMoreNamedDummy);
+
+        assertEquals(NamedDummy.class, namedDummy.getClass());
+        assertEquals(MoreNamedDummy.class, moreNamedDummy.getClass());
+        assertEquals(EvenMoreNamedDummy.class, evenMoreNamedDummy.getClass());
     }
 }

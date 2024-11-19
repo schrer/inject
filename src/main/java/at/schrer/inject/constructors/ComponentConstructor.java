@@ -1,8 +1,9 @@
 package at.schrer.inject.constructors;
 
-import at.schrer.inject.annotations.ByName;
 import at.schrer.inject.blueprints.BeanDescriptor;
 import at.schrer.inject.exceptions.ComponentInstantiationException;
+import at.schrer.inject.structures.Tuple;
+import at.schrer.inject.utils.ReflectionUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -28,22 +29,22 @@ public class ComponentConstructor<V> implements BeanConstructor<V>{
                 .toList();
     }
 
-    public List<Class<?>> getDependencies() {
-        return dependencies;
-    }
-
+    @Override
     public List<BeanDescriptor<Object>> getBeanDependencies() {
         return beanDependencies;
     }
 
+    @Override
     public boolean isDependencyLess() {
         return dependencyLess;
     }
 
-    public boolean matchesParameters(Object... parameters) {
-        Set<Class<?>> providedParamClasses = Arrays.stream(parameters)
-                .map(Object::getClass)
+    @Override
+    public boolean matchesParameters(List<Tuple<BeanDescriptor<Object>, Object>> parameters) {
+        Set<Class<?>> providedParamClasses = parameters.stream()
+                .map(it -> it.left().beanClass())
                 .collect(Collectors.toSet());
+        // TODO what about names?
         return providedParamClasses.size() == dependencies.size()
                 && containsAllMatchingClasses(providedParamClasses, dependencies)
                 && containsAllMatchingInterfaces(dependencies, providedParamClasses);
@@ -81,27 +82,36 @@ public class ComponentConstructor<V> implements BeanConstructor<V>{
         return true;
     }
 
-    public V getInstance(Object... parameters) {
-        if (parameters.length > 1) {
-            parameters = sortMethodParameters(parameters, constructor.getParameterTypes());
+    @Override
+    public V getInstance(List<Tuple<BeanDescriptor<Object>, Object>> parameters) {
+        Object[] instances;
+        if (parameters.isEmpty()){
+            instances = new Object[0];
+        } else if (parameters.size() == 1) {
+            instances = new Object[1];
+            instances[0] = parameters.getFirst().right();
+        } else {
+            instances = sortMethodParameters(parameters, constructor.getParameters());
         }
+
         try {
-            return constructor.newInstance(parameters);
+            return constructor.newInstance(instances);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new ComponentInstantiationException(e);
         }
     }
 
-    private Object[] sortMethodParameters(Object[] parameters, Class<?>[] typesInOrder) {
-        if (parameters.length != typesInOrder.length) {
+    private Object[] sortMethodParameters(List<Tuple<BeanDescriptor<Object>, Object>> instances, Parameter[] parameters) {
+        if (parameters.length != instances.size()) {
             throw new ComponentInstantiationException("Wrong number of parameters given for this constructor.");
         }
-        Object[] sortedParameters = new Object[typesInOrder.length];
-        for (int i = 0; i < typesInOrder.length; i++) {
-            Class<?> target = typesInOrder[i];
-            for (Object param : parameters) {
-                if (target.isAssignableFrom(param.getClass())) {
-                    sortedParameters[i] = param;
+        Object[] sortedParameters = new Object[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
+            Parameter target = parameters[i];
+            for (Tuple<BeanDescriptor<Object>, Object> instance : instances) {
+                BeanDescriptor<Object> descriptor = instance.left();
+                if (descriptor.isMatchingParameter(target)) {
+                    sortedParameters[i] = instance.right();
                 }
             }
             if (sortedParameters[i] == null) {
@@ -112,11 +122,9 @@ public class ComponentConstructor<V> implements BeanConstructor<V>{
     }
 
     private BeanDescriptor<Object> parameterToBeanDescriptor(Parameter parameter){
-        ByName nameAnnotation = parameter.getAnnotation(ByName.class);
-        String name = null;
-        if (nameAnnotation != null) {
-            name = nameAnnotation.value();
-        }
-        return new BeanDescriptor<>(name, (Class<Object>) parameter.getType());
+        return new BeanDescriptor<>(
+                ReflectionUtils.getNameForParameter(parameter),
+                (Class<Object>) parameter.getType()
+        );
     }
 }

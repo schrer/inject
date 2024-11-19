@@ -1,6 +1,9 @@
 package at.schrer.inject.blueprints;
 
+import at.schrer.inject.utils.ReflectionUtils;
 import at.schrer.inject.utils.StringUtils;
+
+import java.lang.reflect.Parameter;
 
 public record BeanDescriptor<T>(String beanAlias, Class<T> beanClass) {
 
@@ -20,6 +23,14 @@ public record BeanDescriptor<T>(String beanAlias, Class<T> beanClass) {
      */
     public boolean isMatchingName(String name) {
         return beanAlias != null && !beanAlias.isBlank() && beanAlias.equals(name);
+    }
+
+    public boolean isMatchingParameter(Parameter parameter){
+        Class<?> neededClass = parameter.getType();
+        String neededName = ReflectionUtils.getNameForParameter(parameter);
+        boolean ignoreNameMatching = StringUtils.isBlank(neededName);
+
+        return descriptorHoldsSubClassOf(neededClass) && (ignoreNameMatching || neededName.equals(this.beanAlias()));
     }
 
     @Override
