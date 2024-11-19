@@ -5,13 +5,18 @@ This is only a pastime, so it is neither complete nor tested. I also did not loo
 
 Basic features and restrictions are:
 
-- Register classes as "Components" for injection via annotation
-- Constructor injection of other Components
-- No field injection
-- Failing early when context is inconsistent or contains cyclic dependencies
-- Reuse of ContextBuilders with same package name coverage
-- Singleton scope for all components
-- Interfaces and abstract classes supported for requesting instances
+- Create contexts with a specified package coverage
+  - Specify several packages, components can depend on components from other contexts
+  - Reuse of existing bean contexts if same package coverage is requested again
+  - Fail early when context is inconsistent or contains cyclic dependencies
+- Bean registration via annotation
+  - Register classes as "Components" for injection via annotation
+  - Specify a name for components to support multiple alternative implementations of an interface or abstract class
+  - Singleton scope for all components within one context
+- Constructor injection of other beans/components
+  - Mark parameters with the [@ByName](./src/main/java/at/schrer/inject/annotations/ByName.java) annotation for matching by bean/component name
+  - No field injection
+  - Interfaces and abstract classes supported for injection or explicit instance loading
 
 ## Usage
 
@@ -31,6 +36,6 @@ YourOtherService service2 = contextBuilder.getComponent(YourOtherService.class);
 
 ## Notable classes
 
-- The [ClassScanner](./src/main/java/at/schrer/inject/ClassScanner.java), which is able to return a list of classes under a provided package name. The classes can also be filtered by annotations.
 - The [ContextBuilder](./src/main/java/at/schrer/inject/ContextBuilder.java), which can instantiate classes marked with the annotation [@Component](./src/main/java/at/schrer/inject/annotations/Component.java) from a provided package.
+- The [ClassScanner](./src/main/java/at/schrer/inject/ClassScanner.java), which is able to return a list of classes under a provided package name. The classes can also be filtered by annotations.
 - An implementation of an [acyclic graph](./src/main/java/at/schrer/inject/structures/SomeAcyclicGraph.java). It is used in the ContextBuilder to build the dependency graph between all components.
