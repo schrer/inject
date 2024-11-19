@@ -56,4 +56,11 @@ public class ValueBluePrint implements BeanBluePrint<String> {
     public List<ValueConstructor<String>> getConstructors() {
         return List.of(constructor);
     }
+
+    @Override
+    public boolean satisfiesDescriptor(BeanDescriptor<?> lookingFor) {
+        // Values are identified mostly by name, so name match is required everytime
+        return this.beanDescriptor.isMatchingName(lookingFor.beanAlias())
+                && this.isMatchingClass(lookingFor.beanClass());
+    }
 }

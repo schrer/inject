@@ -8,7 +8,7 @@ import at.schrer.inject.dummyclasses.safe.interdep.pack1.Pack1Class2;
 import at.schrer.inject.dummyclasses.safe.interdep.pack2.Pack2Class1;
 import at.schrer.inject.dummyclasses.safe.interdep.pack2.Pack2Class2;
 import at.schrer.inject.dummyclasses.safe.interfaces.*;
-import at.schrer.inject.dummyclasses.safe.name.NamedDummy;
+import at.schrer.inject.dummyclasses.safe.name.*;
 import at.schrer.inject.dummyclasses.safe.yesdeps.DepComp1;
 import at.schrer.inject.dummyclasses.safe.yesdeps.DepComp2;
 import at.schrer.inject.dummyclasses.safe.yesdeps.DepComp4;
@@ -296,5 +296,37 @@ class ContextBuilderTest {
         assertNotSame(builder1Set1, builder1Set2);
         assertNotSame(builder1Set1, builder1Set3);
         assertNotSame(builder1Set2, builder1Set3);
+    }
+
+    @Test
+    void matchByName(){
+        // Given
+        ContextBuilder contextBuilder = ContextBuilder.getContextInstance(NAMED_PACKAGE);
+
+        // When
+        var randomInstance = contextBuilder.getComponent(NamingInterface.class);
+        var namedDummy = contextBuilder.getComponent(NamingInterface.NAMEDDUMMY,NamingInterface.class);
+        var moreNamedDummy = contextBuilder.getComponent(NamingInterface.MORENAMEDDUMMY, NamingInterface.class);
+        var evenMoreNamedDummy = contextBuilder.getComponent(NamingInterface.EVENMORENAMEDDUMMY, NamingInterface.class);
+        // Then
+        assertNotNull(randomInstance);
+        assertNotNull(namedDummy);
+        assertNotNull(moreNamedDummy);
+        assertNotNull(evenMoreNamedDummy);
+
+        assertEquals(NamedDummy.class, namedDummy.getClass());
+        assertEquals(MoreNamedDummy.class, moreNamedDummy.getClass());
+        assertEquals(EvenMoreNamedDummy.class, evenMoreNamedDummy.getClass());
+    }
+
+    @Test
+    void exceptionOnUnknownName(){
+        // Given
+        ContextBuilder contextBuilder = ContextBuilder.getContextInstance(NAMED_PACKAGE);
+
+        // When/Then
+        assertThrows(ContextException.class, () -> contextBuilder.getComponent("wrongName", NamingInterface.class));
+        assertThrows(ContextException.class, () -> contextBuilder.getComponent("wrongName", NoNameDummy.class));
+        assertThrows(ContextException.class, () -> contextBuilder.getComponent("wrongName", NamedDummy.class));
     }
 }

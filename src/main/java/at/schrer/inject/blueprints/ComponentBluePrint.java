@@ -67,6 +67,13 @@ public class ComponentBluePrint<T> implements BeanBluePrint<T>{
     }
 
     @Override
+    public boolean satisfiesDescriptor(BeanDescriptor<?> lookingFor) {
+        boolean nameMatchesOrIsIgnored = StringUtils.isBlank(lookingFor.beanAlias())
+                || this.beanDescriptor.isMatchingName(lookingFor.beanAlias());
+        return nameMatchesOrIsIgnored && this.isMatchingClass(lookingFor.beanClass());
+    }
+
+    @Override
     public Class<T> getComponentClass(){
         return this.beanDescriptor.beanClass();
     }

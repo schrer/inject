@@ -8,6 +8,7 @@ import at.schrer.inject.constructors.BeanConstructor;
 import at.schrer.inject.exceptions.ComponentInstantiationException;
 import at.schrer.inject.exceptions.ContextException;
 import at.schrer.inject.structures.SomeAcyclicGraph;
+import at.schrer.inject.utils.StringUtils;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -103,15 +104,14 @@ public class ContextBuilder {
         return getComponentInternal(new BeanDescriptor<>(beanAlias, componentClass));
     }
 
-    public <T> T getComponentInternal(BeanDescriptor<T> beanDescriptor) throws ContextException {
-        // TODO support names
+    private <T> T getComponentInternal(BeanDescriptor<T> beanDescriptor) throws ContextException {
         Optional<Object> match = findMatchingInstance(beanDescriptor);
         if (match.isPresent()) {
             return (T) match.get();
         }
 
         Optional<BeanBluePrint<Class<?>>> bluePrintOptional = componentGraph
-                .find(it -> it.isMatchingClass(beanDescriptor.beanClass()));
+                .find(it -> it.satisfiesDescriptor(beanDescriptor));
         if (bluePrintOptional.isEmpty()) {
             throw new ContextException("Class not found in context: " + beanDescriptor);
         }
@@ -287,9 +287,12 @@ public class ContextBuilder {
     }
 
     private Optional<Object> findMatchingInstance(BeanDescriptor<?> lookingFor){
+        boolean ignoreNameMatch = StringUtils.isBlank(lookingFor.beanAlias());
         for (Map.Entry<BeanDescriptor<?>, Object> entry : componentInstances.entrySet()) {
             BeanDescriptor<?> descriptor = entry.getKey();
-            if (descriptor.descriptorHoldsSubClassOf(lookingFor.beanClass())) {
+            boolean classMatches = descriptor.descriptorHoldsSubClassOf(lookingFor.beanClass());
+            boolean nameMatchesOrIsIgnored = ignoreNameMatch || lookingFor.isMatchingName(descriptor.beanAlias());
+            if (classMatches && nameMatchesOrIsIgnored) {
                 return Optional.of(entry.getValue());
             }
         }

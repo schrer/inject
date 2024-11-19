@@ -2,6 +2,8 @@ package at.schrer.inject.dummyclasses.safe.name;
 
 import at.schrer.inject.annotations.Component;
 
-@Component(name = "thisDummyIsNamed")
-public class NamedDummy {
+import static at.schrer.inject.dummyclasses.safe.name.NamingInterface.NAMEDDUMMY;
+
+@Component(name = NAMEDDUMMY)
+public class NamedDummy implements NamingInterface {
 }

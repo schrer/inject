@@ -19,5 +19,7 @@ public final class TestConstants {
         String INTERDEP_PACKAGE = SAFE_PACKAGE + ".interdep";
         String INTERDEP_PACK1_PACKAGE = INTERDEP_PACKAGE + ".pack1";
         String INTERDEP_PACK2_PACKAGE = INTERDEP_PACKAGE + ".pack2";
+
+        String NAMED_PACKAGE = SAFE_PACKAGE + ".name";
     }
 }

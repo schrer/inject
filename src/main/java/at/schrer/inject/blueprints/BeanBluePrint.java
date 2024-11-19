@@ -28,7 +28,7 @@ public interface BeanBluePrint<T> {
     Class<T> getComponentClass();
     List<? extends BeanConstructor<T>> getConstructors();
 
-    //boolean isMatchingDescriptor(BeanDescriptor clazz);
+    boolean satisfiesDescriptor(BeanDescriptor<?> lookingFor);
 
     T getNoArgsInstance()
             throws ComponentInstantiationException;
