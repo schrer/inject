@@ -14,7 +14,7 @@ Basic features and restrictions are:
   - Specify a name for components to support multiple alternative implementations of an interface or abstract class
   - Singleton scope for all components within one context
 - Constructor injection of other beans/components
-  - Mark parameters with the [@ByName](./src/main/java/at/schrer/inject/annotations/ByName.java) annotation for matching by bean/component name
+  - Mark constructor parameters with the [@ByName](./src/main/java/at/schrer/inject/annotations/ByName.java) annotation for matching by bean/component name
   - No field injection
   - Interfaces and abstract classes supported for injection or explicit instance loading
 
