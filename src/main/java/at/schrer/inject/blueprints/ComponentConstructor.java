@@ -1,9 +1,11 @@
 package at.schrer.inject.blueprints;
 
+import at.schrer.inject.annotations.ByName;
 import at.schrer.inject.exceptions.ComponentInstantiationException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -13,16 +15,24 @@ import java.util.stream.Collectors;
 public class ComponentConstructor<V> {
     private final Constructor<V> constructor;
     private final List<Class<?>> dependencies;
+    private final List<BeanDescriptor<Object>> beanDependencies;
     private final boolean dependencyLess;
 
     public ComponentConstructor(Constructor<V> constructor) {
         this.constructor = constructor;
         this.dependencies = List.of(constructor.getParameterTypes());
         this.dependencyLess = constructor.getParameterCount() == 0;
+        this.beanDependencies = Arrays.stream(constructor.getParameters())
+                .map(this::parameterToBeanDescriptor)
+                .toList();
     }
 
     public List<Class<?>> getDependencies() {
         return dependencies;
+    }
+
+    public List<BeanDescriptor<Object>> getBeanDependencies() {
+        return beanDependencies;
     }
 
     public boolean isDependencyLess() {
@@ -98,5 +108,14 @@ public class ComponentConstructor<V> {
             }
         }
         return sortedParameters;
+    }
+
+    private BeanDescriptor<Object> parameterToBeanDescriptor(Parameter parameter){
+        ByName nameAnnotation = parameter.getAnnotation(ByName.class);
+        String name = null;
+        if (nameAnnotation != null) {
+            name = nameAnnotation.value();
+        }
+        return new BeanDescriptor<>(name, (Class<Object>) parameter.getType());
     }
 }

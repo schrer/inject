@@ -71,4 +71,9 @@ public class ComponentBluePrint<T> implements BeanBluePrint<T>{
     public Optional<String> getBeanAlias() {
         return Optional.ofNullable(this.beanDescriptor.beanAlias());
     }
+
+    @Override
+    public BeanDescriptor<T> getBeanDescriptor() {
+        return this.beanDescriptor;
+    }
 }

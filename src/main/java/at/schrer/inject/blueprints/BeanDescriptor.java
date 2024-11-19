@@ -3,11 +3,11 @@ package at.schrer.inject.blueprints;
 public record BeanDescriptor<T>(String beanAlias, Class<T> beanClass) {
 
     public boolean descriptorHoldsSuperClassOf(Class<?> clazz) {
-        return clazz.isAssignableFrom(this.beanClass);
+        return this.beanClass.isAssignableFrom(clazz);
     }
 
     public boolean descriptorHoldsSubClassOf(Class<?> clazz) {
-        return this.beanClass.isAssignableFrom(clazz);
+        return clazz.isAssignableFrom(this.beanClass);
     }
 
     /**

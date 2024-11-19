@@ -36,4 +36,9 @@ public class ValueBluePrint<T> implements BeanBluePrint<T> {
     public T getInstance(Object... parameters) {
         return value;
     }
+
+    @Override
+    public BeanDescriptor<T> getBeanDescriptor() {
+        return this.beanDescriptor;
+    }
 }

@@ -1,6 +1,7 @@
 package at.schrer.inject;
 
 import at.schrer.inject.annotations.Component;
+import at.schrer.inject.blueprints.BeanDescriptor;
 import at.schrer.inject.blueprints.ComponentBluePrint;
 import at.schrer.inject.blueprints.ComponentConstructor;
 import at.schrer.inject.exceptions.ComponentInstantiationException;
@@ -28,7 +29,7 @@ public class ContextBuilder {
 
     private static final Map<Set<String>, ContextBuilder> loadedBuilders = new ConcurrentHashMap<>();
 
-    private final Map<Class<?>, Object> componentInstances;
+    private final Map<BeanDescriptor<?>, Object> componentInstances;
 
     private final SomeAcyclicGraph<ComponentBluePrint<Class<?>>> componentGraph;
 
@@ -122,7 +123,7 @@ public class ContextBuilder {
         try {
             if (bluePrint.canBeDependencyLess()) {
                 Object instance = bluePrint.getNoArgsInstance();
-                componentInstances.put(instance.getClass(), instance);
+                componentInstances.put(bluePrint.getBeanDescriptor(), instance);
             }
 
             Deque<ComponentBluePrint<Class<?>>> stack = new LinkedList<>();
@@ -155,12 +156,12 @@ public class ContextBuilder {
 
                     if (dependency.canBeDependencyLess()) {
                         Object instance = dependency.getNoArgsInstance();
-                        componentInstances.put(instance.getClass(), instance);
+                        componentInstances.put(dependency.getBeanDescriptor(), instance);
                     } else {
                         Optional<Object> depInstanceOpt = buildIfPossible(dependency);
                         if (depInstanceOpt.isPresent()){
                             Object instance = depInstanceOpt.get();
-                            componentInstances.put(instance.getClass(), instance);
+                            componentInstances.put(dependency.getBeanDescriptor(), instance);
                         } else {
                             stack.push(dependency); // Push unresolved dependency onto the stack
                             allDependenciesResolved = false;
@@ -176,7 +177,7 @@ public class ContextBuilder {
                     }
                     Object instance = instanceOpt.get();
 
-                    componentInstances.put(instance.getClass(), instance);
+                    componentInstances.put(current.getBeanDescriptor(), instance);
                 }
             }
         } catch (ComponentInstantiationException e) {
@@ -278,9 +279,13 @@ public class ContextBuilder {
     }
 
     private Optional<Object> findMatchingInstance(Class<?> clazz){
-        return componentInstances.values().stream()
-                .filter(it -> clazz.isAssignableFrom(it.getClass()))
-                .findFirst();
+        for (Map.Entry<BeanDescriptor<?>, Object> entry : componentInstances.entrySet()) {
+            BeanDescriptor<?> descriptor = entry.getKey();
+            if (descriptor.descriptorHoldsSubClassOf(clazz)) {
+                return Optional.of(entry.getValue());
+            }
+        }
+        return Optional.empty();
     }
 
     private Optional<Object> buildIfPossible(ComponentBluePrint<Class<?>> blueprint) throws ComponentInstantiationException {

@@ -23,6 +23,8 @@ public interface BeanBluePrint<T> {
      */
     boolean isMatchingClass(Class<?> clazz);
 
+    BeanDescriptor<T> getBeanDescriptor();
+
     //boolean isMatchingDescriptor(BeanDescriptor clazz);
 
     T getNoArgsInstance()
