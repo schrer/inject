@@ -1,5 +1,7 @@
 package at.schrer.inject.blueprints;
 
+import at.schrer.inject.utils.StringUtils;
+
 public record BeanDescriptor<T>(String beanAlias, Class<T> beanClass) {
 
     public boolean descriptorHoldsSuperClassOf(Class<?> clazz) {
@@ -18,5 +20,12 @@ public record BeanDescriptor<T>(String beanAlias, Class<T> beanClass) {
      */
     public boolean isMatchingName(String name) {
         return beanAlias != null && !beanAlias.isBlank() && beanAlias.equals(name);
+    }
+
+    @Override
+    public String toString(){
+        String nameRepresentation = StringUtils.isBlank(beanAlias) ? "" : beanAlias + " ";
+        String classNameRepresentation = this.beanClass.getName();
+        return nameRepresentation + classNameRepresentation;
     }
 }

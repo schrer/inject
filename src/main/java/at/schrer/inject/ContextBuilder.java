@@ -96,23 +96,31 @@ public class ContextBuilder {
      * @throws ContextException if the class is not a known component within the context or cannot be created for other reasons.
      */
     public <T> T getComponent(Class<T> componentClass) throws ContextException {
+        return getComponentInternal(new BeanDescriptor<>(null, componentClass));
+    }
+
+    public <T> T getComponent(String beanAlias, Class<T> componentClass) throws ContextException {
+        return getComponentInternal(new BeanDescriptor<>(beanAlias, componentClass));
+    }
+
+    public <T> T getComponentInternal(BeanDescriptor<T> beanDescriptor) throws ContextException {
         // TODO support names
-        Optional<Object> match = findMatchingInstance(componentClass);
+        Optional<Object> match = findMatchingInstance(beanDescriptor);
         if (match.isPresent()) {
             return (T) match.get();
         }
 
         Optional<BeanBluePrint<Class<?>>> bluePrintOptional = componentGraph
-                .find(it -> it.isMatchingClass(componentClass));
+                .find(it -> it.isMatchingClass(beanDescriptor.beanClass()));
         if (bluePrintOptional.isEmpty()) {
-            throw new ContextException("Class not found in context: " + componentClass.getName());
+            throw new ContextException("Class not found in context: " + beanDescriptor);
         }
 
         BeanBluePrint<Class<?>> bluePrint = bluePrintOptional.get();
         createInstanceFromBlueprint(bluePrint);
 
         // Store the resolved instance for the requested class
-        return (T) findMatchingInstance(bluePrint.getComponentClass()).get();
+        return (T) findMatchingInstance(bluePrint.getBeanDescriptor()).get();
     }
 
     /**
@@ -136,8 +144,7 @@ public class ContextBuilder {
             while (!stack.isEmpty()) {
                 BeanBluePrint<Class<?>> current = stack.peek();
 
-                Class<?> currentClass = current.getComponentClass();
-                Optional<Object> currentMatch = findMatchingInstance(currentClass);
+                Optional<Object> currentMatch = findMatchingInstance(current.getBeanDescriptor());
                 if (currentMatch.isPresent()) {
                     // Instance of blueprint already available
                     stack.pop();
@@ -149,8 +156,7 @@ public class ContextBuilder {
                 boolean allDependenciesResolved = true;
 
                 for (BeanBluePrint<Class<?>> dependency : outbounds) {
-                    Class<?> depClass = dependency.getComponentClass();
-                    Optional<Object> depMatch = findMatchingInstance(depClass);
+                    Optional<Object> depMatch = findMatchingInstance(dependency.getBeanDescriptor());
                     if (depMatch.isPresent()) {
                         // Dependency already available
                         continue;
@@ -280,10 +286,10 @@ public class ContextBuilder {
         return Optional.empty();
     }
 
-    private Optional<Object> findMatchingInstance(Class<?> clazz){
+    private Optional<Object> findMatchingInstance(BeanDescriptor<?> lookingFor){
         for (Map.Entry<BeanDescriptor<?>, Object> entry : componentInstances.entrySet()) {
             BeanDescriptor<?> descriptor = entry.getKey();
-            if (descriptor.descriptorHoldsSubClassOf(clazz)) {
+            if (descriptor.descriptorHoldsSubClassOf(lookingFor.beanClass())) {
                 return Optional.of(entry.getValue());
             }
         }
@@ -297,7 +303,7 @@ public class ContextBuilder {
 
         List<? extends BeanConstructor<Class<?>>> constructors = blueprint.getConstructors();
         for (var constructor : constructors) {
-            List<Class<?>> dependencies = constructor.getDependencies();
+            List<BeanDescriptor<Object>> dependencies = constructor.getBeanDependencies();
             List<Object> instances = dependencies.stream()
                     .map(this::findMatchingInstance)
                     .filter(Optional::isPresent)
