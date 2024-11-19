@@ -1,6 +1,7 @@
-package at.schrer.inject.blueprints;
+package at.schrer.inject.constructors;
 
 import at.schrer.inject.annotations.ByName;
+import at.schrer.inject.blueprints.BeanDescriptor;
 import at.schrer.inject.exceptions.ComponentInstantiationException;
 
 import java.lang.reflect.Constructor;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class ComponentConstructor<V> {
+public class ComponentConstructor<V> implements BeanConstructor<V>{
     private final Constructor<V> constructor;
     private final List<Class<?>> dependencies;
     private final List<BeanDescriptor<Object>> beanDependencies;

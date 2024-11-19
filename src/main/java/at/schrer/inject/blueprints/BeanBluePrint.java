@@ -1,8 +1,9 @@
 package at.schrer.inject.blueprints;
 
-import at.schrer.inject.exceptions.ContextException;
+import at.schrer.inject.constructors.BeanConstructor;
+import at.schrer.inject.exceptions.ComponentInstantiationException;
 
-import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 import java.util.Optional;
 
 public interface BeanBluePrint<T> {
@@ -24,12 +25,14 @@ public interface BeanBluePrint<T> {
     boolean isMatchingClass(Class<?> clazz);
 
     BeanDescriptor<T> getBeanDescriptor();
+    Class<T> getComponentClass();
+    List<? extends BeanConstructor<T>> getConstructors();
 
     //boolean isMatchingDescriptor(BeanDescriptor clazz);
 
     T getNoArgsInstance()
-            throws InvocationTargetException, InstantiationException, IllegalAccessException;
+            throws ComponentInstantiationException;
 
     T getInstance(Object... parameters)
-            throws ContextException, InvocationTargetException, InstantiationException, IllegalAccessException;
+            throws ComponentInstantiationException;
 }

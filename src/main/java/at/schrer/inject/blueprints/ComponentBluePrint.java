@@ -1,5 +1,6 @@
 package at.schrer.inject.blueprints;
 
+import at.schrer.inject.constructors.ComponentConstructor;
 import at.schrer.inject.exceptions.ComponentInstantiationException;
 import at.schrer.inject.annotations.Component;
 import at.schrer.inject.utils.StringUtils;
@@ -35,6 +36,7 @@ public class ComponentBluePrint<T> implements BeanBluePrint<T>{
         return noArgConstructor != null;
     }
 
+    @Override
     public boolean isMatchingClass(Class<?> clazz){
         return clazz.isAssignableFrom(this.beanDescriptor.beanClass());
     }
@@ -59,10 +61,12 @@ public class ComponentBluePrint<T> implements BeanBluePrint<T>{
         return constructor.get().getInstance(parameters);
     }
 
+    @Override
     public List<ComponentConstructor<T>> getConstructors(){
         return constructors;
     }
 
+    @Override
     public Class<T> getComponentClass(){
         return this.beanDescriptor.beanClass();
     }

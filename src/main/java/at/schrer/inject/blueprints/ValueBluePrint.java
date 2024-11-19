@@ -1,15 +1,20 @@
 package at.schrer.inject.blueprints;
 
+import at.schrer.inject.constructors.ValueConstructor;
+
+import java.util.List;
 import java.util.Optional;
 
-public class ValueBluePrint<T> implements BeanBluePrint<T> {
+public class ValueBluePrint implements BeanBluePrint<String> {
 
-    private final T value;
-    private final BeanDescriptor<T> beanDescriptor;
+    private final String value;
+    private final BeanDescriptor<String> beanDescriptor;
+    private final ValueConstructor<String> constructor;
 
-    public ValueBluePrint(String alias, T value) {
+    public ValueBluePrint(String alias, String value) {
         this.value = value;
-        this.beanDescriptor = new BeanDescriptor<>(alias, (Class<T>) value.getClass());
+        this.beanDescriptor = new BeanDescriptor<>(alias, String.class);
+        this.constructor = new ValueConstructor<>(value);
     }
 
     @Override
@@ -28,17 +33,27 @@ public class ValueBluePrint<T> implements BeanBluePrint<T> {
     }
 
     @Override
-    public T getNoArgsInstance() {
+    public String getNoArgsInstance() {
         return value;
     }
 
     @Override
-    public T getInstance(Object... parameters) {
+    public String getInstance(Object... parameters) {
         return value;
     }
 
     @Override
-    public BeanDescriptor<T> getBeanDescriptor() {
+    public BeanDescriptor<String> getBeanDescriptor() {
         return this.beanDescriptor;
+    }
+
+    @Override
+    public Class<String> getComponentClass() {
+        return beanDescriptor.beanClass();
+    }
+
+    @Override
+    public List<ValueConstructor<String>> getConstructors() {
+        return List.of(constructor);
     }
 }
