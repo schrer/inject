@@ -1,6 +1,6 @@
 package at.schrer.inject.utils;
 
-public class StringUtils {
+public final class StringUtils {
 
     private StringUtils(){}
 
