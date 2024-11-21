@@ -37,5 +37,5 @@ YourOtherService service2 = contextBuilder.getComponent(YourOtherService.class);
 ## Notable classes
 
 - The [ContextBuilder](./src/main/java/at/schrer/inject/ContextBuilder.java), which can instantiate classes marked with the annotation [@Component](./src/main/java/at/schrer/inject/annotations/Component.java) from a provided package.
-- The [ClassScanner](./src/main/java/at/schrer/inject/ClassScanner.java), which is able to return a list of classes under a provided package name. The classes can also be filtered by annotations.
+- The [ClassScanner](./src/main/java/at/schrer/inject/utils/ClassScanner.java), which is able to return a list of classes under a provided package name. The classes can also be filtered by annotations.
 - An implementation of an [acyclic graph](./src/main/java/at/schrer/inject/structures/SomeAcyclicGraph.java). It is used in the ContextBuilder to build the dependency graph between all components.

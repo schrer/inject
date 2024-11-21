@@ -9,6 +9,7 @@ import at.schrer.inject.exceptions.ComponentInstantiationException;
 import at.schrer.inject.exceptions.ContextException;
 import at.schrer.inject.structures.SomeAcyclicGraph;
 import at.schrer.inject.structures.Tuple;
+import at.schrer.inject.utils.ClassScanner;
 import at.schrer.inject.utils.StringUtils;
 
 import java.io.IOException;
@@ -43,8 +44,8 @@ public class ContextBuilder {
         List<Class<?>> components = new LinkedList<>();
 
         for (String packagePath: packagePaths) {
-            final ClassScanner classScanner = new ClassScanner(packagePath);
             try {
+                final ClassScanner classScanner = new ClassScanner(packagePath);
                 components.addAll(classScanner.findByAnnotation(Component.class));
             } catch (IOException | URISyntaxException | ClassNotFoundException e) {
                 throw new ContextException("Unable to load classes for package " + packagePath, e);

@@ -1,4 +1,4 @@
-package at.schrer.inject;
+package at.schrer.inject.utils;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -12,18 +12,20 @@ import java.util.stream.Stream;
 public class ClassScanner {
 
     private final String scanPackage;
+    private final List<Class<?>> foundClasses;
 
-    public ClassScanner(String scanPackage) {
+    public ClassScanner(String scanPackage) throws IOException, URISyntaxException, ClassNotFoundException {
         this.scanPackage = scanPackage;
+        this.foundClasses = findClassesInPackage();
     }
 
     public List<Class<?>> findByAnnotation(Class<? extends Annotation> annotationClass) throws IOException, URISyntaxException, ClassNotFoundException {
         List<Class<?>> classesInPackage = findClassesInPackage();
-        return classesInPackage.stream().filter(it -> hasAnnotation(it, annotationClass)).toList();
+        return classesInPackage.stream().filter(it -> ReflectionUtils.hasAnnotation(it, annotationClass)).toList();
     }
 
     // https://stackoverflow.com/questions/520328/can-you-find-all-classes-in-a-package-using-reflection
-    public List<Class<?>> findClassesInPackage() throws IOException, URISyntaxException, ClassNotFoundException {
+    protected List<Class<?>> findClassesInPackage() throws IOException, URISyntaxException, ClassNotFoundException {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         String substitutedPath = scanPackage.replace(".", "/");
         Enumeration<URL> resources = classLoader.getResources(substitutedPath);
@@ -50,11 +52,7 @@ public class ClassScanner {
                         + fileName.substring(0, fileName.length()-6)));
             }
         }
-        return classes;
-    }
-
-    private boolean hasAnnotation(Class<?> target, Class<? extends Annotation> annotationClass){
-        return target.getAnnotation(annotationClass) != null;
+        return List.copyOf(classes);
     }
 
     private String getSubPackage(Path clazzPath){
