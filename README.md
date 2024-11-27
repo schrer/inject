@@ -11,6 +11,7 @@ Basic features and restrictions are:
   - Fail early when context is inconsistent or contains cyclic dependencies
 - Bean registration via annotation
   - Register classes as "Components" for injection via annotation
+  - Mark methods with a return type as Component sources to create instances from their classes (only methods without parameters only)
   - Specify a name for components to support multiple alternative implementations of an interface or abstract class
   - Singleton scope for all components within one context
 - Constructor injection of other beans/components
