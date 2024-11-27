@@ -4,6 +4,7 @@ import at.schrer.inject.annotations.Component;
 import at.schrer.inject.blueprints.BeanBluePrint;
 import at.schrer.inject.blueprints.BeanDescriptor;
 import at.schrer.inject.blueprints.ComponentBluePrint;
+import at.schrer.inject.blueprints.FunctionBluePrint;
 import at.schrer.inject.constructors.BeanConstructor;
 import at.schrer.inject.exceptions.ComponentInstantiationException;
 import at.schrer.inject.exceptions.ContextException;
@@ -13,6 +14,7 @@ import at.schrer.inject.utils.ClassScanner;
 import at.schrer.inject.utils.StringUtils;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,45 +37,51 @@ public class ContextBuilder {
 
     private final Map<BeanDescriptor<?>, Object> componentInstances;
 
-    private final SomeAcyclicGraph<BeanBluePrint<Class<?>>> componentGraph;
+    private final SomeAcyclicGraph<BeanBluePrint<?>> componentGraph;
 
     private ContextBuilder(Set<String> packagePaths) throws ContextException {
         this.componentInstances = new HashMap<>();
         this.componentGraph = new SomeAcyclicGraph<>();
 
         List<Class<?>> components = new LinkedList<>();
+        List<Tuple<String, Method>> sourceMethods = new LinkedList<>();
 
         for (String packagePath: packagePaths) {
             try {
                 final ClassScanner classScanner = new ClassScanner(packagePath);
                 components.addAll(classScanner.findByAnnotation(Component.class));
+                sourceMethods.addAll(classScanner.findSourceFunctions());
             } catch (IOException | URISyntaxException | ClassNotFoundException e) {
                 throw new ContextException("Unable to load classes for package " + packagePath, e);
             }
         }
 
-        final Set<BeanBluePrint<Class<?>>> bluePrints = new HashSet<>();
+        final Set<BeanBluePrint<?>> bluePrints = new HashSet<>();
         for (Class<?> componentClass : components) {
-            bluePrints.add((BeanBluePrint<Class<?>>) new ComponentBluePrint<>(componentClass));
+            bluePrints.add(new ComponentBluePrint<>(componentClass));
         }
 
-        final List<BeanBluePrint<Class<?>>> noArgBluePrints = bluePrints.stream()
+        for (Tuple<String, Method> sourceMethod : sourceMethods) {
+            bluePrints.add(new FunctionBluePrint(sourceMethod.left(), sourceMethod.right()));
+        }
+
+        final List<BeanBluePrint<?>> noArgBluePrints = bluePrints.stream()
                 .filter(BeanBluePrint::canBeDependencyLess)
                 .toList();
 
-        for (BeanBluePrint<Class<?>> bluePrint : noArgBluePrints) {
+        for (BeanBluePrint<?> bluePrint : noArgBluePrints) {
             this.componentGraph.addNode(bluePrint);
             bluePrints.remove(bluePrint);
         }
 
         int lastRunResolved = this.componentGraph.size();
         while (!bluePrints.isEmpty() && lastRunResolved > 0) {
-            Set<BeanBluePrint<Class<?>>> addedToGraph = new HashSet<>();
-            for (BeanBluePrint<Class<?>> bluePrint : bluePrints) {
-                Optional<List<BeanBluePrint<Class<?>>>> dependencyNodes =
+            Set<BeanBluePrint<?>> addedToGraph = new HashSet<>();
+            for (BeanBluePrint<?> bluePrint : bluePrints) {
+                Optional<List<? extends BeanBluePrint<?>>> dependencyNodes =
                         getSatisfiableDependencies(bluePrint);
                 if (dependencyNodes.isPresent()) {
-                    componentGraph.addNode(bluePrint, dependencyNodes.get());
+                    componentGraph.addNode(bluePrint, (List<BeanBluePrint<?>>) dependencyNodes.get());
                     addedToGraph.add(bluePrint);
                 }
             }
@@ -112,13 +120,13 @@ public class ContextBuilder {
             return (T) match.get();
         }
 
-        Optional<BeanBluePrint<Class<?>>> bluePrintOptional = componentGraph
+        Optional<BeanBluePrint<?>> bluePrintOptional = componentGraph
                 .find(it -> it.satisfiesDescriptor(beanDescriptor));
         if (bluePrintOptional.isEmpty()) {
             throw new ContextException("Class not found in context: " + beanDescriptor);
         }
 
-        BeanBluePrint<Class<?>> bluePrint = bluePrintOptional.get();
+        BeanBluePrint<?> bluePrint = bluePrintOptional.get();
         createInstanceFromBlueprint(bluePrint);
 
         // Store the resolved instance for the requested class
@@ -131,20 +139,20 @@ public class ContextBuilder {
      * @param bluePrint the blueprint that should be built.
      * @throws ContextException if the class is not a known component within the context or cannot be created for other reasons.
      */
-    private void createInstanceFromBlueprint(BeanBluePrint<Class<?>> bluePrint) throws ContextException {
+    private void createInstanceFromBlueprint(BeanBluePrint<?> bluePrint) throws ContextException {
         try {
             if (bluePrint.canBeDependencyLess()) {
                 Object instance = bluePrint.getNoArgsInstance();
                 componentInstances.put(bluePrint.getBeanDescriptor(), instance);
             }
 
-            Deque<BeanBluePrint<Class<?>>> stack = new LinkedList<>();
+            Deque<BeanBluePrint<?>> stack = new LinkedList<>();
 
             // Initialize stack with the root blueprint
             stack.push(bluePrint);
 
             while (!stack.isEmpty()) {
-                BeanBluePrint<Class<?>> current = stack.peek();
+                BeanBluePrint<?> current = stack.peek();
 
                 Optional<Object> currentMatch = findMatchingInstance(current.getBeanDescriptor());
                 if (currentMatch.isPresent()) {
@@ -154,10 +162,10 @@ public class ContextBuilder {
                 }
 
                 // Get dependencies of the current blueprint
-                Set<BeanBluePrint<Class<?>>> outbounds = componentGraph.getOutbounds(current);
+                Set<BeanBluePrint<?>> outbounds = componentGraph.getOutbounds(current);
                 boolean allDependenciesResolved = true;
 
-                for (BeanBluePrint<Class<?>> dependency : outbounds) {
+                for (BeanBluePrint<?> dependency : outbounds) {
                     Optional<Object> depMatch = findMatchingInstance(dependency.getBeanDescriptor());
                     if (depMatch.isPresent()) {
                         // Dependency already available
@@ -256,14 +264,14 @@ public class ContextBuilder {
      * @param bluePrint the component blueprint for which satisfiable dependencies should be found
      * @return an Optional containing a list of dependencies that can satisfy one of the constructors, or an empty Optional if there is no such list
      */
-    private Optional<List<BeanBluePrint<Class<?>>>> getSatisfiableDependencies(BeanBluePrint<Class<?>> bluePrint){
+    private Optional<List<? extends BeanBluePrint<?>>> getSatisfiableDependencies(BeanBluePrint<?> bluePrint){
         if (bluePrint.canBeDependencyLess()) {
             return Optional.of(List.of());
         }
 
-        List<? extends BeanConstructor<Class<?>>> constructors = bluePrint.getConstructors();
-        for (BeanConstructor<Class<?>> constructor : constructors) {
-            var result = resolveConstructorDependencies(constructor);
+        List<? extends BeanConstructor<?>> constructors = bluePrint.getConstructors();
+        for (BeanConstructor<?> constructor : constructors) {
+            Optional<List<? extends BeanBluePrint<?>>> result = resolveConstructorDependencies(constructor);
             if(result.isPresent()) {
                 return result;
             }
@@ -271,11 +279,11 @@ public class ContextBuilder {
         return Optional.empty();
     }
 
-    private Optional<List<BeanBluePrint<Class<?>>>> resolveConstructorDependencies(
-            BeanConstructor<Class<?>> constructor
+    private Optional<List<? extends BeanBluePrint<?>>> resolveConstructorDependencies(
+            BeanConstructor<?> constructor
     ){
         List<BeanDescriptor<Object>> dependencies = constructor.getBeanDependencies();
-        List<BeanBluePrint<Class<?>>> deps = dependencies.stream()
+        List<? extends BeanBluePrint<?>> deps = dependencies.stream()
                 .map(dep -> componentGraph.find(
                         it -> it.satisfiesDescriptor(dep)
                 ).orElse(null))
@@ -301,12 +309,12 @@ public class ContextBuilder {
         return Optional.empty();
     }
 
-    private Optional<Object> buildIfPossible(BeanBluePrint<Class<?>> blueprint) throws ComponentInstantiationException {
+    private Optional<Object> buildIfPossible(BeanBluePrint<?> blueprint) throws ComponentInstantiationException {
         if(blueprint.canBeDependencyLess()) {
             return Optional.of(blueprint.getNoArgsInstance());
         }
 
-        List<? extends BeanConstructor<Class<?>>> constructors = blueprint.getConstructors();
+        List<? extends BeanConstructor<?>> constructors = blueprint.getConstructors();
         for (var constructor : constructors) {
             List<BeanDescriptor<Object>> dependencies = constructor.getBeanDependencies();
             List<Tuple<BeanDescriptor<Object>,Object>> instances = dependencies.stream()

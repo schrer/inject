@@ -3,6 +3,7 @@ package at.schrer.inject.utils;
 import at.schrer.inject.annotations.ByName;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
 public final class ReflectionUtils {
@@ -17,6 +18,10 @@ public final class ReflectionUtils {
     }
 
     public static boolean hasAnnotation(Class<?> target, Class<? extends Annotation> annotationClass){
+        return target.getAnnotation(annotationClass) != null;
+    }
+
+    public static boolean hasAnnotation(Method target, Class<? extends Annotation> annotationClass){
         return target.getAnnotation(annotationClass) != null;
     }
 }

@@ -6,12 +6,16 @@ import at.schrer.inject.dummyclasses.safe.depless.Component2;
 import at.schrer.inject.dummyclasses.safe.depless.NonComponent1;
 import at.schrer.inject.dummyclasses.safe.depless.sub.Component3;
 import at.schrer.inject.dummyclasses.safe.depless.sub.NonComponent2;
+import at.schrer.inject.structures.Tuple;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import static at.schrer.inject.TestConstants.ComponentNames.BEANSOURCE_NAMES;
+import static at.schrer.inject.TestConstants.Packages.BEANSOURCE_PACKAGE;
 import static at.schrer.inject.TestConstants.Packages.NO_DEP_DUMMY_PACKAGE;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,5 +44,17 @@ class ClassScannerTest {
         // Then
         assertEquals(3, classes.size());
         assertTrue(classes.containsAll(List.of(Component1.class, Component2.class, Component3.class)));
+    }
+
+    @Test
+    void findSourceMethods() throws IOException, URISyntaxException, ClassNotFoundException {
+        // Given
+        ClassScanner scanner = new ClassScanner(BEANSOURCE_PACKAGE);
+        // When
+        List<Tuple<String, Method>> methods = scanner.findSourceFunctions();
+        List<String> annotatedNames = methods.stream().map(Tuple::left).toList();
+        // Then
+        assertEquals(5, methods.size());
+        assertTrue(annotatedNames.containsAll(BEANSOURCE_NAMES));
     }
 }

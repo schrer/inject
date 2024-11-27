@@ -1,5 +1,6 @@
 package at.schrer.inject;
 
+import at.schrer.inject.dummyclasses.safe.beansource.AnotherClass;
 import at.schrer.inject.dummyclasses.safe.depless.Component1;
 import at.schrer.inject.dummyclasses.safe.depless.Component2;
 import at.schrer.inject.dummyclasses.safe.depless.NonComponent1;
@@ -349,5 +350,40 @@ class ContextBuilderTest {
         assertEquals(NamedDummy.class, namedDummy.getClass());
         assertEquals(MoreNamedDummy.class, moreNamedDummy.getClass());
         assertEquals(EvenMoreNamedDummy.class, evenMoreNamedDummy.getClass());
+    }
+
+    @Test
+    void instantiateFromMethod(){
+        // Given
+        ContextBuilder contextBuilder = ContextBuilder.getContextInstance(BEANSOURCE_PACKAGE);
+
+        // When
+        AnotherClass instance = contextBuilder.getComponent(AnotherClass.class);
+
+        // Then
+        assertNotNull(instance);
+    }
+
+    @Test
+    void instantiateFromMethodNamed(){
+        // Given
+        ContextBuilder contextBuilder = ContextBuilder.getContextInstance(BEANSOURCE_PACKAGE);
+
+        // When
+        AnotherClass inst1 = contextBuilder.getComponent(TestConstants.ComponentNames.AC_INST1, AnotherClass.class);
+        AnotherClass inst2 = contextBuilder.getComponent(TestConstants.ComponentNames.AC_INST2, AnotherClass.class);
+        AnotherClass inst3 = contextBuilder.getComponent(TestConstants.ComponentNames.AC_INST3, AnotherClass.class);
+        AnotherClass inst4 = contextBuilder.getComponent(TestConstants.ComponentNames.AC_INST4, AnotherClass.class);
+
+        // Then
+        assertNotNull(inst1);
+        assertNotNull(inst2);
+        assertNotNull(inst3);
+        assertNotNull(inst4);
+
+        assertEquals(TestConstants.ComponentNames.AC_INST1, inst1.getName());
+        assertEquals(TestConstants.ComponentNames.AC_INST2, inst2.getName());
+        assertEquals(TestConstants.ComponentNames.AC_INST3, inst3.getName());
+        assertEquals(TestConstants.ComponentNames.AC_INST4, inst4.getName());
     }
 }

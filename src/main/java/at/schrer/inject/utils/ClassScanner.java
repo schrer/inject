@@ -1,7 +1,13 @@
 package at.schrer.inject.utils;
 
+import at.schrer.inject.annotations.BeanSource;
+import at.schrer.inject.annotations.Component;
+import at.schrer.inject.structures.Tuple;
+
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -19,9 +25,30 @@ public class ClassScanner {
         this.foundClasses = findClassesInPackage();
     }
 
-    public List<Class<?>> findByAnnotation(Class<? extends Annotation> annotationClass) throws IOException, URISyntaxException, ClassNotFoundException {
-        List<Class<?>> classesInPackage = findClassesInPackage();
-        return classesInPackage.stream().filter(it -> ReflectionUtils.hasAnnotation(it, annotationClass)).toList();
+    public List<Class<?>> findByAnnotation(Class<? extends Annotation> annotationClass) {
+        return foundClasses.stream()
+                .filter(it -> ReflectionUtils.hasAnnotation(it, annotationClass))
+                .toList();
+    }
+
+    public List<Tuple<String, Method>> findSourceFunctions(){
+        return findByAnnotation(BeanSource.class).stream()
+                .flatMap(source -> Arrays.stream(source.getMethods()))
+                .filter(this::isComponentSourceMethod)
+                .map(this::annotateMethod)
+                .toList();
+    }
+
+    private Tuple<String, Method> annotateMethod(Method method) {
+        Component annotation = method.getAnnotation(Component.class);
+        String name = annotation.name();
+        return new Tuple<>(name, method);
+    }
+
+    private boolean isComponentSourceMethod(Method method){
+        return Modifier.isPublic(method.getModifiers())
+                && Modifier.isStatic(method.getModifiers())
+                && ReflectionUtils.hasAnnotation(method, Component.class);
     }
 
     // https://stackoverflow.com/questions/520328/can-you-find-all-classes-in-a-package-using-reflection
