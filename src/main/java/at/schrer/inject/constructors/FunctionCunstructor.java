@@ -25,18 +25,17 @@ public class FunctionCunstructor<V> implements BeanConstructor<V>{
 
     @Override
     public List<BeanDescriptor<Object>> getBeanDependencies() {
-        // TODO add info for methods with dependencies
-        return List.of();
+        return beanDependencies;
     }
 
     @Override
     public boolean isDependencyLess() {
-        // TODO add check for methods with dependencies
-        return true;
+        return beanDependencies.isEmpty();
     }
 
     @Override
     public boolean matchesParameters(List<Tuple<BeanDescriptor<Object>, Object>> parameters) {
+        // TODO implement
         return true;
     }
 
