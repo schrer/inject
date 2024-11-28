@@ -3,7 +3,7 @@ package at.schrer.inject.constructors;
 import at.schrer.inject.blueprints.BeanDescriptor;
 import at.schrer.inject.exceptions.ComponentInstantiationException;
 import at.schrer.inject.structures.Tuple;
-import at.schrer.inject.utils.ReflectionUtils;
+import at.schrer.inject.utils.BeanUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -25,7 +25,7 @@ public class ComponentConstructor<V> implements BeanConstructor<V>{
         this.dependencies = List.of(constructor.getParameterTypes());
         this.dependencyLess = constructor.getParameterCount() == 0;
         this.beanDependencies = Arrays.stream(constructor.getParameters())
-                .map(this::parameterToBeanDescriptor)
+                .map(BeanUtils::parameterToBeanDescriptor)
                 .toList();
     }
 
@@ -119,12 +119,5 @@ public class ComponentConstructor<V> implements BeanConstructor<V>{
             }
         }
         return sortedParameters;
-    }
-
-    private BeanDescriptor<Object> parameterToBeanDescriptor(Parameter parameter){
-        return new BeanDescriptor<>(
-                ReflectionUtils.getNameForParameter(parameter),
-                (Class<Object>) parameter.getType()
-        );
     }
 }
