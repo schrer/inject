@@ -3,7 +3,7 @@ package at.schrer.inject.blueprints;
 import at.schrer.inject.constructors.BeanConstructor;
 import at.schrer.inject.constructors.FunctionCunstructor;
 import at.schrer.inject.exceptions.ComponentInstantiationException;
-import at.schrer.inject.structures.Tuple;
+import at.schrer.inject.structures.Pair;
 import at.schrer.inject.utils.StringUtils;
 
 import java.lang.reflect.Method;
@@ -62,7 +62,7 @@ public class FunctionBluePrint implements BeanBluePrint<Object> {
     }
 
     @Override
-    public Object getInstance(List<Tuple<BeanDescriptor<Object>, Object>> parameters) throws ComponentInstantiationException {
+    public Object getInstance(List<Pair<BeanDescriptor<Object>, Object>> parameters) throws ComponentInstantiationException {
         // TODO add implementation with parameters
         return null;
     }

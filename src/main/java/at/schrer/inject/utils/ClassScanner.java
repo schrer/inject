@@ -2,7 +2,7 @@ package at.schrer.inject.utils;
 
 import at.schrer.inject.annotations.BeanSource;
 import at.schrer.inject.annotations.Component;
-import at.schrer.inject.structures.Tuple;
+import at.schrer.inject.structures.Pair;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -31,7 +31,7 @@ public class ClassScanner {
                 .toList();
     }
 
-    public List<Tuple<String, Method>> findSourceFunctions(){
+    public List<Pair<String, Method>> findSourceFunctions(){
         return findByAnnotation(BeanSource.class).stream()
                 .flatMap(source -> Arrays.stream(source.getMethods()))
                 .filter(this::isComponentSourceMethod)
@@ -39,10 +39,10 @@ public class ClassScanner {
                 .toList();
     }
 
-    private Tuple<String, Method> annotateMethod(Method method) {
+    private Pair<String, Method> annotateMethod(Method method) {
         Component annotation = method.getAnnotation(Component.class);
         String name = annotation.name();
-        return new Tuple<>(name, method);
+        return new Pair<>(name, method);
     }
 
     private boolean isComponentSourceMethod(Method method){

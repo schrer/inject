@@ -2,7 +2,7 @@ package at.schrer.inject.blueprints;
 
 import at.schrer.inject.constructors.BeanConstructor;
 import at.schrer.inject.exceptions.ComponentInstantiationException;
-import at.schrer.inject.structures.Tuple;
+import at.schrer.inject.structures.Pair;
 
 import java.util.List;
 import java.util.Optional;
@@ -64,6 +64,6 @@ public interface BeanBluePrint<T> {
     T getNoArgsInstance()
             throws ComponentInstantiationException;
 
-    T getInstance(List<Tuple<BeanDescriptor<Object>, Object>> parameters)
+    T getInstance(List<Pair<BeanDescriptor<Object>, Object>> parameters)
             throws ComponentInstantiationException;
 }

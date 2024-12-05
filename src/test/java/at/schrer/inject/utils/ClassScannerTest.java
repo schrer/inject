@@ -6,7 +6,7 @@ import at.schrer.inject.dummyclasses.safe.depless.Component2;
 import at.schrer.inject.dummyclasses.safe.depless.NonComponent1;
 import at.schrer.inject.dummyclasses.safe.depless.sub.Component3;
 import at.schrer.inject.dummyclasses.safe.depless.sub.NonComponent2;
-import at.schrer.inject.structures.Tuple;
+import at.schrer.inject.structures.Pair;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -51,8 +51,8 @@ class ClassScannerTest {
         // Given
         ClassScanner scanner = new ClassScanner(BEANSOURCE_PACKAGE);
         // When
-        List<Tuple<String, Method>> methods = scanner.findSourceFunctions();
-        List<String> annotatedNames = methods.stream().map(Tuple::left).toList();
+        List<Pair<String, Method>> methods = scanner.findSourceFunctions();
+        List<String> annotatedNames = methods.stream().map(Pair::left).toList();
         // Then
         assertEquals(BEANSOURCE_NAMES.size()+1, methods.size());
         assertTrue(annotatedNames.containsAll(BEANSOURCE_NAMES));

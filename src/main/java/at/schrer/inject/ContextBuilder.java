@@ -9,7 +9,7 @@ import at.schrer.inject.constructors.BeanConstructor;
 import at.schrer.inject.exceptions.ComponentInstantiationException;
 import at.schrer.inject.exceptions.ContextException;
 import at.schrer.inject.structures.SomeAcyclicGraph;
-import at.schrer.inject.structures.Tuple;
+import at.schrer.inject.structures.Pair;
 import at.schrer.inject.utils.BeanUtils;
 import at.schrer.inject.utils.ClassScanner;
 import at.schrer.inject.utils.StringUtils;
@@ -81,7 +81,7 @@ public class ContextBuilder {
 
     private Set<BeanBluePrint<?>> createBluePrints(Set<String> packagePaths){
         List<Class<?>> components = new LinkedList<>();
-        List<Tuple<String, Method>> sourceMethods = new LinkedList<>();
+        List<Pair<String, Method>> sourceMethods = new LinkedList<>();
 
         for (String packagePath: packagePaths) {
             try {
@@ -98,7 +98,7 @@ public class ContextBuilder {
             bluePrints.add(new ComponentBluePrint<>(componentClass));
         }
 
-        for (Tuple<String, Method> sourceMethod : sourceMethods) {
+        for (Pair<String, Method> sourceMethod : sourceMethods) {
             if(StringUtils.isBlank(sourceMethod.left())
                     && BeanUtils.isMandatoryNameType(sourceMethod.right().getReturnType())) {
                 throw new ContextException("Component defined in " + sourceMethod.right().getName() + " in class " + sourceMethod.left() + " needs a name. Basic types are required to have one.");
@@ -328,10 +328,10 @@ public class ContextBuilder {
         List<? extends BeanConstructor<?>> constructors = blueprint.getConstructors();
         for (var constructor : constructors) {
             List<BeanDescriptor<Object>> dependencies = constructor.getBeanDependencies();
-            List<Tuple<BeanDescriptor<Object>,Object>> instances = dependencies.stream()
-                    .map(it -> new Tuple<>(it, findMatchingInstance(it)))
+            List<Pair<BeanDescriptor<Object>,Object>> instances = dependencies.stream()
+                    .map(it -> new Pair<>(it, findMatchingInstance(it)))
                     .filter(it -> it.right().isPresent())
-                    .map(it -> new Tuple<>(it.left(), it.right().get()))
+                    .map(it -> new Pair<>(it.left(), it.right().get()))
                     .toList();
             if (instances.size() == dependencies.size()) {
                 return Optional.of(constructor.getInstance(instances));

@@ -2,7 +2,7 @@ package at.schrer.inject.constructors;
 
 import at.schrer.inject.blueprints.BeanDescriptor;
 import at.schrer.inject.exceptions.ComponentInstantiationException;
-import at.schrer.inject.structures.Tuple;
+import at.schrer.inject.structures.Pair;
 import at.schrer.inject.utils.BeanUtils;
 
 import java.lang.reflect.Constructor;
@@ -40,7 +40,7 @@ public class ComponentConstructor<V> implements BeanConstructor<V>{
     }
 
     @Override
-    public boolean matchesParameters(List<Tuple<BeanDescriptor<Object>, Object>> parameters) {
+    public boolean matchesParameters(List<Pair<BeanDescriptor<Object>, Object>> parameters) {
         Set<Class<?>> providedParamClasses = parameters.stream()
                 .map(it -> it.left().beanClass())
                 .collect(Collectors.toSet());
@@ -83,7 +83,7 @@ public class ComponentConstructor<V> implements BeanConstructor<V>{
     }
 
     @Override
-    public V getInstance(List<Tuple<BeanDescriptor<Object>, Object>> parameters) {
+    public V getInstance(List<Pair<BeanDescriptor<Object>, Object>> parameters) {
         Object[] instances;
         if (parameters.isEmpty()){
             instances = new Object[0];
@@ -101,14 +101,14 @@ public class ComponentConstructor<V> implements BeanConstructor<V>{
         }
     }
 
-    private Object[] sortMethodParameters(List<Tuple<BeanDescriptor<Object>, Object>> instances, Parameter[] parameters) {
+    private Object[] sortMethodParameters(List<Pair<BeanDescriptor<Object>, Object>> instances, Parameter[] parameters) {
         if (parameters.length != instances.size()) {
             throw new ComponentInstantiationException("Wrong number of parameters given for this constructor.");
         }
         Object[] sortedParameters = new Object[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
             Parameter target = parameters[i];
-            for (Tuple<BeanDescriptor<Object>, Object> instance : instances) {
+            for (Pair<BeanDescriptor<Object>, Object> instance : instances) {
                 BeanDescriptor<Object> descriptor = instance.left();
                 if (descriptor.isMatchingParameter(target)) {
                     sortedParameters[i] = instance.right();
