@@ -403,4 +403,9 @@ class ContextBuilderTest {
         assertEquals(TestConstants.ComponentNames.VAL_1, val1);
         assertEquals(TestConstants.ComponentNames.VAL_2, val2);
     }
+
+    @Test
+    void unnamedStringBeanNotAllowed(){
+        assertThrows(ContextException.class, () -> ContextBuilder.getContextInstance(UNNAMED_STRING_PACKAGE));
+    }
 }

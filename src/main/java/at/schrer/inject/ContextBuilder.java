@@ -10,6 +10,7 @@ import at.schrer.inject.exceptions.ComponentInstantiationException;
 import at.schrer.inject.exceptions.ContextException;
 import at.schrer.inject.structures.SomeAcyclicGraph;
 import at.schrer.inject.structures.Tuple;
+import at.schrer.inject.utils.BeanUtils;
 import at.schrer.inject.utils.ClassScanner;
 import at.schrer.inject.utils.StringUtils;
 
@@ -43,27 +44,8 @@ public class ContextBuilder {
         this.componentInstances = new HashMap<>();
         this.componentGraph = new SomeAcyclicGraph<>();
 
-        List<Class<?>> components = new LinkedList<>();
-        List<Tuple<String, Method>> sourceMethods = new LinkedList<>();
 
-        for (String packagePath: packagePaths) {
-            try {
-                final ClassScanner classScanner = new ClassScanner(packagePath);
-                components.addAll(classScanner.findByAnnotation(Component.class));
-                sourceMethods.addAll(classScanner.findSourceFunctions());
-            } catch (IOException | URISyntaxException | ClassNotFoundException e) {
-                throw new ContextException("Unable to load classes for package " + packagePath, e);
-            }
-        }
-
-        final Set<BeanBluePrint<?>> bluePrints = new HashSet<>();
-        for (Class<?> componentClass : components) {
-            bluePrints.add(new ComponentBluePrint<>(componentClass));
-        }
-
-        for (Tuple<String, Method> sourceMethod : sourceMethods) {
-            bluePrints.add(new FunctionBluePrint(sourceMethod.left(), sourceMethod.right()));
-        }
+        final Set<BeanBluePrint<?>> bluePrints = createBluePrints(packagePaths);
 
         final List<BeanBluePrint<?>> noArgBluePrints = bluePrints.stream()
                 .filter(BeanBluePrint::canBeDependencyLess)
@@ -95,6 +77,35 @@ public class ContextBuilder {
         if (!bluePrints.isEmpty()) {
             throw new ContextException("Unable to resolve dependencies for " + bluePrints.size() + " components.");
         }
+    }
+
+    private Set<BeanBluePrint<?>> createBluePrints(Set<String> packagePaths){
+        List<Class<?>> components = new LinkedList<>();
+        List<Tuple<String, Method>> sourceMethods = new LinkedList<>();
+
+        for (String packagePath: packagePaths) {
+            try {
+                final ClassScanner classScanner = new ClassScanner(packagePath);
+                components.addAll(classScanner.findByAnnotation(Component.class));
+                sourceMethods.addAll(classScanner.findSourceFunctions());
+            } catch (IOException | URISyntaxException | ClassNotFoundException e) {
+                throw new ContextException("Unable to load classes for package " + packagePath, e);
+            }
+        }
+
+        final Set<BeanBluePrint<?>> bluePrints = new HashSet<>();
+        for (Class<?> componentClass : components) {
+            bluePrints.add(new ComponentBluePrint<>(componentClass));
+        }
+
+        for (Tuple<String, Method> sourceMethod : sourceMethods) {
+            if(StringUtils.isBlank(sourceMethod.left())
+                    && BeanUtils.isMandatoryNameType(sourceMethod.right().getReturnType())) {
+                throw new ContextException("Component defined in " + sourceMethod.right().getName() + " in class " + sourceMethod.left() + " needs a name. Basic types are required to have one.");
+            }
+            bluePrints.add(new FunctionBluePrint(sourceMethod.left(), sourceMethod.right()));
+        }
+        return bluePrints;
     }
 
     /**

@@ -24,6 +24,7 @@ public final class TestConstants {
 
         String NAMED_PACKAGE = SAFE_PACKAGE + ".name";
         String BEANSOURCE_PACKAGE = SAFE_PACKAGE + ".beansource";
+        String UNNAMED_STRING_PACKAGE = ILLEGAL_PACKAGE + ".unnamedstring";
     }
 
     public interface ComponentNames {
