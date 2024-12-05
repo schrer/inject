@@ -11,8 +11,8 @@ Basic features and restrictions are:
   - Fail early when context is inconsistent or contains cyclic dependencies
 - Bean registration via annotation
   - Register classes as "Components" for injection via annotation
-  - Mark methods with a return type as Component sources to create instances from their classes (only methods without parameters only)
-  - Specify a name for components to support multiple alternative implementations of an interface or abstract class
+  - Mark methods with a return type as Component sources to create instances from their classes (methods without parameters only for the moment)
+  - Specify a name for components to support multiple alternative implementations of an interface or abstract class, as well as basic types like String and Integer
   - Singleton scope for all components within one context
 - Constructor injection of other beans/components
   - Mark constructor parameters with the [@ByName](./src/main/java/at/schrer/inject/annotations/ByName.java) annotation for matching by bean/component name
