@@ -54,7 +54,7 @@ class ClassScannerTest {
         List<Tuple<String, Method>> methods = scanner.findSourceFunctions();
         List<String> annotatedNames = methods.stream().map(Tuple::left).toList();
         // Then
-        assertEquals(5, methods.size());
+        assertEquals(BEANSOURCE_NAMES.size()+1, methods.size());
         assertTrue(annotatedNames.containsAll(BEANSOURCE_NAMES));
     }
 }

@@ -386,4 +386,21 @@ class ContextBuilderTest {
         assertEquals(TestConstants.ComponentNames.AC_INST3, inst3.getName());
         assertEquals(TestConstants.ComponentNames.AC_INST4, inst4.getName());
     }
+
+    @Test
+    void getStringValueBeans(){
+        // Given
+        ContextBuilder contextBuilder = ContextBuilder.getContextInstance(BEANSOURCE_PACKAGE);
+
+        // When
+        String val1 = contextBuilder.getComponent(TestConstants.ComponentNames.VAL_1, String.class);
+        String val2 = contextBuilder.getComponent(TestConstants.ComponentNames.VAL_2, String.class);
+
+        // Then
+        assertNotNull(val1);
+        assertNotNull(val2);
+
+        assertEquals(TestConstants.ComponentNames.VAL_1, val1);
+        assertEquals(TestConstants.ComponentNames.VAL_2, val2);
+    }
 }
