@@ -23,6 +23,8 @@ Basic features and restrictions are:
 
 Mark your classes and functions with the annotation [@Component](./src/main/java/at/schrer/inject/annotations/Component.java), then use the class [ContextBuilder](./src/main/java/at/schrer/inject/ContextBuilder.java) to load your Java package and build instances of your classes.
 
+A minimal example application to showcase the usage can be found in [my other repository](https://github.com/schrer/movielist)
+
 #### Define a class as component
 
 The constructor is then used to instantiate it, any constructor parameters will be injected.
