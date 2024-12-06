@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "at.schrer"
-version = "0.9"
+version = "1.0.0"
 
 repositories {
     mavenCentral()
