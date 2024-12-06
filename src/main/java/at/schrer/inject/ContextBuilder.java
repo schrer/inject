@@ -44,37 +44,10 @@ public class ContextBuilder {
         this.componentInstances = new HashMap<>();
         this.componentGraph = new SomeAcyclicGraph<>();
 
+        var bluePrints = createBluePrints(packagePaths);
+        var leftOverBluePrints = fillComponentGraph(bluePrints);
 
-        final Set<BeanBluePrint<?>> bluePrints = createBluePrints(packagePaths);
-
-        final List<BeanBluePrint<?>> noArgBluePrints = bluePrints.stream()
-                .filter(BeanBluePrint::canBeDependencyLess)
-                .toList();
-
-        for (BeanBluePrint<?> bluePrint : noArgBluePrints) {
-            this.componentGraph.addNode(bluePrint);
-            bluePrints.remove(bluePrint);
-        }
-
-        int lastRunResolved = this.componentGraph.size();
-        while (!bluePrints.isEmpty() && lastRunResolved > 0) {
-            Set<BeanBluePrint<?>> addedToGraph = new HashSet<>();
-            for (BeanBluePrint<?> bluePrint : bluePrints) {
-                Optional<List<? extends BeanBluePrint<?>>> dependencyNodes =
-                        getSatisfiableDependencies(bluePrint);
-                if (dependencyNodes.isPresent()) {
-                    componentGraph.addNode(bluePrint, (List<BeanBluePrint<?>>) dependencyNodes.get());
-                    addedToGraph.add(bluePrint);
-                }
-            }
-
-            lastRunResolved = addedToGraph.size();
-
-            addedToGraph.forEach(bluePrints::remove);
-            addedToGraph.clear();
-        }
-
-        if (!bluePrints.isEmpty()) {
+        if (!leftOverBluePrints.isEmpty()) {
             throw new ContextException("Unable to resolve dependencies for " + bluePrints.size() + " components.");
         }
     }
@@ -104,6 +77,36 @@ public class ContextBuilder {
                 throw new ContextException("Component defined in " + sourceMethod.right().getName() + " in class " + sourceMethod.left() + " needs a name. Basic types are required to have one.");
             }
             bluePrints.add(new FunctionBluePrint(sourceMethod.left(), sourceMethod.right()));
+        }
+        return bluePrints;
+    }
+
+    private Set<BeanBluePrint<?>> fillComponentGraph(Set<BeanBluePrint<?>> bluePrints) {
+        final List<BeanBluePrint<?>> noArgBluePrints = bluePrints.stream()
+                .filter(BeanBluePrint::canBeDependencyLess)
+                .toList();
+
+        for (BeanBluePrint<?> bluePrint : noArgBluePrints) {
+            this.componentGraph.addNode(bluePrint);
+            bluePrints.remove(bluePrint);
+        }
+
+        int lastRunResolved = this.componentGraph.size();
+        while (!bluePrints.isEmpty() && lastRunResolved > 0) {
+            Set<BeanBluePrint<?>> addedToGraph = new HashSet<>();
+            for (BeanBluePrint<?> bluePrint : bluePrints) {
+                Optional<List<? extends BeanBluePrint<?>>> dependencyNodes =
+                        getSatisfiableDependencies(bluePrint);
+                if (dependencyNodes.isPresent()) {
+                    componentGraph.addNode(bluePrint, (List<BeanBluePrint<?>>) dependencyNodes.get());
+                    addedToGraph.add(bluePrint);
+                }
+            }
+
+            lastRunResolved = addedToGraph.size();
+
+            addedToGraph.forEach(bluePrints::remove);
+            addedToGraph.clear();
         }
         return bluePrints;
     }
