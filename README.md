@@ -21,8 +21,44 @@ Basic features and restrictions are:
 
 ## Usage
 
-Mark your classes with the annotation [@Component](./src/main/java/at/schrer/inject/annotations/Component.java), then use the class [ContextBuilder](./src/main/java/at/schrer/inject/ContextBuilder.java) to load your Java package and build instances of your classes.
+Mark your classes and functions with the annotation [@Component](./src/main/java/at/schrer/inject/annotations/Component.java), then use the class [ContextBuilder](./src/main/java/at/schrer/inject/ContextBuilder.java) to load your Java package and build instances of your classes.
 
+#### Define a class as component
+
+The constructor is then used to instantiate it, any constructor parameters will be injected.
+```java
+@Component
+public class YourService {
+    private final Repository repository;
+    
+    public YourService(Repository repository){
+        this.repository = repository;
+    }
+    // Business logic
+}
+```
+
+#### BeanSource and parameter injection by name
+
+The [@BeanSource](./src/main/java/at/schrer/inject/annotations/BeanSource.java) annotation can be used to mark classes as containing static methods that produce components.
+The [@ByName](./src/main/java/at/schrer/inject/annotations/ByName.java) annotation identifies beans by name in addition to their class when injecting.
+```java
+@BeanSource
+public class BeanSource {
+    @Component(name = "namedString")
+    public static String namedString() {
+        return "Some string that will be a component";
+    }
+
+    public static YourOtherService someClassInstance(
+            @ByName("namedString") String parameter
+    ) {
+        return new YourOtherService(parameter);
+    }
+}
+```
+
+#### Using the ContextBuilder to get instances
 ```java
 // Create context once
 ContextBuilder contextBuilder = ContextBuilder.getContextInstance("at.schrer.inject", "at.schrer.example", "at.schrer.util");
@@ -30,9 +66,8 @@ ContextBuilder contextBuilder = ContextBuilder.getContextInstance("at.schrer.inj
 // Request instances
 YourService service1 = contextBuilder.getComponent(YourService.class);
 
-// YourOtherService depends on YourService.
-// YourOtherService got the same instance of it injected as you already requested.
-YourOtherService service2 = contextBuilder.getComponent(YourOtherService.class);
+// YourOtherService will be identified by its name, so you can have several instances with different names in your context
+YourOtherService service2 = contextBuilder.getComponent("serviceName", YourOtherService.class);
 ```
 
 ## Notable classes
