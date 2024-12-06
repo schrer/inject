@@ -13,9 +13,11 @@ import java.util.Optional;
 public class FunctionBluePrint implements BeanBluePrint<Object> {
     private final BeanDescriptor<Object> beanDescriptor;
     private final FunctionCunstructor<Object> constructor;
+    private final boolean dependencyLess;
 
     public FunctionBluePrint(String name, Method method) {
         this.beanDescriptor = new BeanDescriptor<>(name, (Class<Object>) method.getReturnType());
+        this.dependencyLess = method.getParameterCount() == 0;
         this.constructor = new FunctionCunstructor<>(method, this.beanDescriptor.beanClass());
     }
 
@@ -26,7 +28,7 @@ public class FunctionBluePrint implements BeanBluePrint<Object> {
 
     @Override
     public boolean canBeDependencyLess() {
-        return true;
+        return dependencyLess;
     }
 
     @Override
@@ -63,7 +65,6 @@ public class FunctionBluePrint implements BeanBluePrint<Object> {
 
     @Override
     public Object getInstance(List<Pair<BeanDescriptor<Object>, Object>> parameters) throws ComponentInstantiationException {
-        // TODO add implementation with parameters
-        return null;
+        return this.constructor.getInstance(parameters);
     }
 }

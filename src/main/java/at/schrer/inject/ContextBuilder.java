@@ -337,7 +337,7 @@ public class ContextBuilder {
                     .map(it -> new Pair<>(it.left(), it.right().get()))
                     .toList();
             if (instances.size() == dependencies.size()) {
-                return Optional.of(constructor.getInstance(instances));
+                return Optional.of(blueprint.getInstance(instances));
             }
         }
         return Optional.empty();

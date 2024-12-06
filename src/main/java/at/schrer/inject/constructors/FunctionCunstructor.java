@@ -41,10 +41,21 @@ public class FunctionCunstructor<V> implements BeanConstructor<V>{
 
     @Override
     public V getInstance(List<Pair<BeanDescriptor<Object>, Object>> parameters) {
+
+        Object[] instances;
+        if (parameters.isEmpty()){
+            instances = new Object[0];
+        } else if (parameters.size() == 1) {
+            instances = new Object[1];
+            instances[0] = parameters.getFirst().right();
+        } else {
+            instances = BeanUtils.sortMethodParameters(parameters, sourceMethod.getParameters());
+        }
+
         try {
-            return (V) this.sourceMethod.invoke(null);
+            return (V) sourceMethod.invoke(null, instances);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new ComponentInstantiationException("Failed to create instance of " + beanClass, e);
+            throw new ComponentInstantiationException(e);
         }
     }
 }

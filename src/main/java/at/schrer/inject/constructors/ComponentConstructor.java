@@ -7,11 +7,9 @@ import at.schrer.inject.utils.BeanUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ComponentConstructor<V> implements BeanConstructor<V>{
@@ -41,9 +39,9 @@ public class ComponentConstructor<V> implements BeanConstructor<V>{
 
     @Override
     public boolean matchesParameters(List<Pair<BeanDescriptor<Object>, Object>> parameters) {
-        Set<Class<?>> providedParamClasses = parameters.stream()
+        List<Class<?>> providedParamClasses = parameters.stream()
                 .map(it -> it.left().beanClass())
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
         // TODO what about names?
         return providedParamClasses.size() == dependencies.size()
                 && containsAllMatchingClasses(providedParamClasses, dependencies)
@@ -91,7 +89,7 @@ public class ComponentConstructor<V> implements BeanConstructor<V>{
             instances = new Object[1];
             instances[0] = parameters.getFirst().right();
         } else {
-            instances = sortMethodParameters(parameters, constructor.getParameters());
+            instances = BeanUtils.sortMethodParameters(parameters, constructor.getParameters());
         }
 
         try {
@@ -99,25 +97,5 @@ public class ComponentConstructor<V> implements BeanConstructor<V>{
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new ComponentInstantiationException(e);
         }
-    }
-
-    private Object[] sortMethodParameters(List<Pair<BeanDescriptor<Object>, Object>> instances, Parameter[] parameters) {
-        if (parameters.length != instances.size()) {
-            throw new ComponentInstantiationException("Wrong number of parameters given for this constructor.");
-        }
-        Object[] sortedParameters = new Object[parameters.length];
-        for (int i = 0; i < parameters.length; i++) {
-            Parameter target = parameters[i];
-            for (Pair<BeanDescriptor<Object>, Object> instance : instances) {
-                BeanDescriptor<Object> descriptor = instance.left();
-                if (descriptor.isMatchingParameter(target)) {
-                    sortedParameters[i] = instance.right();
-                }
-            }
-            if (sortedParameters[i] == null) {
-                throw new ComponentInstantiationException("Instance of class " + target + " is missing as provided parameter.");
-            }
-        }
-        return sortedParameters;
     }
 }

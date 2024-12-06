@@ -1,6 +1,7 @@
 package at.schrer.inject;
 
 import at.schrer.inject.dummyclasses.safe.beansource.AnotherClass;
+import at.schrer.inject.dummyclasses.safe.beansourcedeps.OneClass;
 import at.schrer.inject.dummyclasses.safe.depless.Component1;
 import at.schrer.inject.dummyclasses.safe.depless.Component2;
 import at.schrer.inject.dummyclasses.safe.depless.NonComponent1;
@@ -407,5 +408,18 @@ class ContextBuilderTest {
     @Test
     void unnamedStringBeanNotAllowed(){
         assertThrows(ContextException.class, () -> ContextBuilder.getContextInstance(UNNAMED_STRING_PACKAGE));
+    }
+
+    @Test
+    void getFunctionSourcedBeanWithDependencies(){
+        // Given
+        ContextBuilder contextBuilder = ContextBuilder.getContextInstance(BEANSOURCEDEP_PACKAGE);
+
+        // When
+        OneClass instance = contextBuilder.getComponent(OneClass.class);
+
+        // Then
+        assertNotNull(instance);
+        assertNotNull(instance.getTwoClass());
     }
 }

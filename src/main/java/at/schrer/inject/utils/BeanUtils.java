@@ -1,8 +1,11 @@
 package at.schrer.inject.utils;
 
 import at.schrer.inject.blueprints.BeanDescriptor;
+import at.schrer.inject.exceptions.ComponentInstantiationException;
+import at.schrer.inject.structures.Pair;
 
 import java.lang.reflect.Parameter;
+import java.util.List;
 import java.util.Set;
 
 public final class BeanUtils {
@@ -35,5 +38,31 @@ public final class BeanUtils {
      */
     public static <T> boolean isMandatoryNameType(Class<T> clazz){
         return basicTypes.contains(clazz);
+    }
+
+    /**
+     * Sorts the provided instances to match the order of the provided parameters.
+     * @param instances the instances that should be sorted
+     * @param parameters the parameters that dictate the order
+     * @return the sorted instances
+     */
+    public static Object[] sortMethodParameters(List<Pair<BeanDescriptor<Object>, Object>> instances, Parameter[] parameters) {
+        if (parameters.length != instances.size()) {
+            throw new ComponentInstantiationException("Wrong number of parameters given for this constructor.");
+        }
+        Object[] sortedParameters = new Object[parameters.length];
+        for (int i = 0; i < parameters.length; i++) {
+            Parameter target = parameters[i];
+            for (Pair<BeanDescriptor<Object>, Object> instance : instances) {
+                BeanDescriptor<Object> descriptor = instance.left();
+                if (descriptor.isMatchingParameter(target)) {
+                    sortedParameters[i] = instance.right();
+                }
+            }
+            if (sortedParameters[i] == null) {
+                throw new ComponentInstantiationException("Instance of class " + target + " is missing as provided parameter.");
+            }
+        }
+        return sortedParameters;
     }
 }
