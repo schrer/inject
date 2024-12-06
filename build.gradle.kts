@@ -25,3 +25,16 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+
+            pom {
+                name.set("inject")
+                description.set("A dependency injection library")
+            }
+        }
+    }
+}
