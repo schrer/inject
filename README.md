@@ -6,7 +6,7 @@ This is only a pastime, so it is neither complete nor tested. I also did not loo
 Basic features and restrictions are:
 
 - Create contexts with a specified package coverage
-  - Specify several packages, components can depend on components from other contexts
+  - Specify several packages, components can depend on components from other packages
   - Reuse of existing bean contexts if same package coverage is requested again
   - Fail early when context is inconsistent or contains cyclic dependencies
 - Bean registration via annotation
