@@ -28,7 +28,7 @@ public final class TestConstants {
         String UNNAMED_STRING_PACKAGE = ILLEGAL_PACKAGE + ".unnamedstring";
     }
 
-    public interface ComponentNames {
+    public interface ComponentNamesBeanSourcePack {
         String AC_INST1 = "inst1";
         String AC_INST2 = "inst2";
         String AC_INST3 = "inst3";
@@ -36,5 +36,11 @@ public final class TestConstants {
         String VAL_1 = "val1";
         String VAL_2 = "val2";
         List<String> BEANSOURCE_NAMES = List.of(AC_INST1, AC_INST2, AC_INST3, AC_INST4, VAL_1, VAL_2);
+    }
+
+    public interface ComponentNamesBeanSourceDepPack {
+        String TC1 = "one";
+        String TC2 = "two";
+        String TC3 = "three";
     }
 }

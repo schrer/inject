@@ -12,19 +12,19 @@ public class BSTestSource {
         return new SomeClass();
     }
 
-    @Component(name = TestConstants.ComponentNames.AC_INST1)
+    @Component(name = TestConstants.ComponentNamesBeanSourcePack.AC_INST1)
     public static AnotherClass name1Class(){
-        return new AnotherClass(TestConstants.ComponentNames.AC_INST1);
+        return new AnotherClass(TestConstants.ComponentNamesBeanSourcePack.AC_INST1);
     }
 
-    @Component(name = TestConstants.ComponentNames.AC_INST2)
+    @Component(name = TestConstants.ComponentNamesBeanSourcePack.AC_INST2)
     public static AnotherClass name2Class(){
-        return new AnotherClass(TestConstants.ComponentNames.AC_INST2);
+        return new AnotherClass(TestConstants.ComponentNamesBeanSourcePack.AC_INST2);
     }
 
-    @Component(name = TestConstants.ComponentNames.AC_INST3)
+    @Component(name = TestConstants.ComponentNamesBeanSourcePack.AC_INST3)
     public static AnotherClass name3Class(){
-        return new AnotherClass(TestConstants.ComponentNames.AC_INST3);
+        return new AnotherClass(TestConstants.ComponentNamesBeanSourcePack.AC_INST3);
     }
 
     public static AnotherClass notASource(){

@@ -1,13 +1,13 @@
 package at.schrer.inject.dummyclasses.safe.beansourcedeps;
 
 public class OneClass {
-    private final TwoClass twoClass;
+    private final ThreeClass threeClass;
 
-    public OneClass(TwoClass twoClass) {
-        this.twoClass = twoClass;
+    public OneClass(ThreeClass threeClass) {
+        this.threeClass = threeClass;
     }
 
-    public TwoClass getTwoClass() {
-        return twoClass;
+    public ThreeClass getTwoClass() {
+        return threeClass;
     }
 }

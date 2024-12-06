@@ -14,7 +14,7 @@ import java.lang.reflect.Method;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import static at.schrer.inject.TestConstants.ComponentNames.BEANSOURCE_NAMES;
+import static at.schrer.inject.TestConstants.ComponentNamesBeanSourcePack.BEANSOURCE_NAMES;
 import static at.schrer.inject.TestConstants.Packages.BEANSOURCE_PACKAGE;
 import static at.schrer.inject.TestConstants.Packages.NO_DEP_DUMMY_PACKAGE;
 import static org.junit.jupiter.api.Assertions.*;

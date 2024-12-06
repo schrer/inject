@@ -1,6 +1,7 @@
 package at.schrer.inject;
 
 import at.schrer.inject.dummyclasses.safe.beansource.AnotherClass;
+import at.schrer.inject.dummyclasses.safe.beansourcedeps.DepsNeedToBeInOrder;
 import at.schrer.inject.dummyclasses.safe.beansourcedeps.OneClass;
 import at.schrer.inject.dummyclasses.safe.depless.Component1;
 import at.schrer.inject.dummyclasses.safe.depless.Component2;
@@ -371,10 +372,10 @@ class ContextBuilderTest {
         ContextBuilder contextBuilder = ContextBuilder.getContextInstance(BEANSOURCE_PACKAGE);
 
         // When
-        AnotherClass inst1 = contextBuilder.getComponent(TestConstants.ComponentNames.AC_INST1, AnotherClass.class);
-        AnotherClass inst2 = contextBuilder.getComponent(TestConstants.ComponentNames.AC_INST2, AnotherClass.class);
-        AnotherClass inst3 = contextBuilder.getComponent(TestConstants.ComponentNames.AC_INST3, AnotherClass.class);
-        AnotherClass inst4 = contextBuilder.getComponent(TestConstants.ComponentNames.AC_INST4, AnotherClass.class);
+        AnotherClass inst1 = contextBuilder.getComponent(TestConstants.ComponentNamesBeanSourcePack.AC_INST1, AnotherClass.class);
+        AnotherClass inst2 = contextBuilder.getComponent(TestConstants.ComponentNamesBeanSourcePack.AC_INST2, AnotherClass.class);
+        AnotherClass inst3 = contextBuilder.getComponent(TestConstants.ComponentNamesBeanSourcePack.AC_INST3, AnotherClass.class);
+        AnotherClass inst4 = contextBuilder.getComponent(TestConstants.ComponentNamesBeanSourcePack.AC_INST4, AnotherClass.class);
 
         // Then
         assertNotNull(inst1);
@@ -382,10 +383,10 @@ class ContextBuilderTest {
         assertNotNull(inst3);
         assertNotNull(inst4);
 
-        assertEquals(TestConstants.ComponentNames.AC_INST1, inst1.getName());
-        assertEquals(TestConstants.ComponentNames.AC_INST2, inst2.getName());
-        assertEquals(TestConstants.ComponentNames.AC_INST3, inst3.getName());
-        assertEquals(TestConstants.ComponentNames.AC_INST4, inst4.getName());
+        assertEquals(TestConstants.ComponentNamesBeanSourcePack.AC_INST1, inst1.getName());
+        assertEquals(TestConstants.ComponentNamesBeanSourcePack.AC_INST2, inst2.getName());
+        assertEquals(TestConstants.ComponentNamesBeanSourcePack.AC_INST3, inst3.getName());
+        assertEquals(TestConstants.ComponentNamesBeanSourcePack.AC_INST4, inst4.getName());
     }
 
     @Test
@@ -394,15 +395,15 @@ class ContextBuilderTest {
         ContextBuilder contextBuilder = ContextBuilder.getContextInstance(BEANSOURCE_PACKAGE);
 
         // When
-        String val1 = contextBuilder.getComponent(TestConstants.ComponentNames.VAL_1, String.class);
-        String val2 = contextBuilder.getComponent(TestConstants.ComponentNames.VAL_2, String.class);
+        String val1 = contextBuilder.getComponent(TestConstants.ComponentNamesBeanSourcePack.VAL_1, String.class);
+        String val2 = contextBuilder.getComponent(TestConstants.ComponentNamesBeanSourcePack.VAL_2, String.class);
 
         // Then
         assertNotNull(val1);
         assertNotNull(val2);
 
-        assertEquals(TestConstants.ComponentNames.VAL_1, val1);
-        assertEquals(TestConstants.ComponentNames.VAL_2, val2);
+        assertEquals(TestConstants.ComponentNamesBeanSourcePack.VAL_1, val1);
+        assertEquals(TestConstants.ComponentNamesBeanSourcePack.VAL_2, val2);
     }
 
     @Test
@@ -421,5 +422,24 @@ class ContextBuilderTest {
         // Then
         assertNotNull(instance);
         assertNotNull(instance.getTwoClass());
+    }
+
+    @Test
+    void getFunctionSourcedBeanWithDependenciesNamedOrdered(){
+        // Given
+        ContextBuilder contextBuilder = ContextBuilder.getContextInstance(BEANSOURCEDEP_PACKAGE);
+
+        // When
+        DepsNeedToBeInOrder inst = contextBuilder.getComponent(DepsNeedToBeInOrder.class);
+
+        // Then
+        assertNotNull(inst);
+        assertNotNull(inst.tc1());
+        assertNotNull(inst.tc2());
+        assertNotNull(inst.tc3());
+
+        assertEquals(TestConstants.ComponentNamesBeanSourceDepPack.TC1, inst.tc1().name());
+        assertEquals(TestConstants.ComponentNamesBeanSourceDepPack.TC2, inst.tc2().name());
+        assertEquals(TestConstants.ComponentNamesBeanSourceDepPack.TC3, inst.tc3().name());
     }
 }
