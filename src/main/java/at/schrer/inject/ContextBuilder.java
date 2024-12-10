@@ -157,8 +157,7 @@ public class ContextBuilder {
         try {
             if (bluePrint.canBeDependencyLess()) {
                 Object instance = bluePrint.getNoArgsInstance();
-                validateInstance(instance, bluePrint.getBeanDescriptor());
-                componentInstances.put(bluePrint.getBeanDescriptor(), instance);
+                addToComponentInstances(bluePrint.getBeanDescriptor(), instance);
             }
 
             Deque<BeanBluePrint<?>> stack = new LinkedList<>();
@@ -177,30 +176,23 @@ public class ContextBuilder {
                 }
 
                 // Get dependencies of the current blueprint
-                Set<BeanBluePrint<?>> outbounds = componentGraph.getOutbounds(current);
+                Set<BeanBluePrint<?>> dependencies = componentGraph.getOutbounds(current);
                 boolean allDependenciesResolved = true;
 
-                for (BeanBluePrint<?> dependency : outbounds) {
+                for (BeanBluePrint<?> dependency : dependencies) {
                     Optional<Object> depMatch = findMatchingInstance(dependency.getBeanDescriptor());
                     if (depMatch.isPresent()) {
                         // Dependency already available
                         continue;
                     }
 
-                    if (dependency.canBeDependencyLess()) {
-                        Object instance = dependency.getNoArgsInstance();
-                        validateInstance(instance, dependency.getBeanDescriptor());
-                        componentInstances.put(dependency.getBeanDescriptor(), instance);
+                    Optional<Object> depInstanceOpt = buildIfPossible(dependency);
+                    if (depInstanceOpt.isPresent()){
+                        Object instance = depInstanceOpt.get();
+                        addToComponentInstances(dependency.getBeanDescriptor(), instance);
                     } else {
-                        Optional<Object> depInstanceOpt = buildIfPossible(dependency);
-                        if (depInstanceOpt.isPresent()){
-                            Object instance = depInstanceOpt.get();
-                            validateInstance(instance, dependency.getBeanDescriptor());
-                            componentInstances.put(dependency.getBeanDescriptor(), instance);
-                        } else {
-                            stack.push(dependency); // Push unresolved dependency onto the stack
-                            allDependenciesResolved = false;
-                        }
+                        stack.push(dependency); // Push unresolved dependency onto the stack
+                        allDependenciesResolved = false;
                     }
                 }
 
@@ -211,13 +203,19 @@ public class ContextBuilder {
                         throw new ContextException("Failed to instantiate " + current.getBeanClass() + ". This is a bug.");
                     }
                     Object instance = instanceOpt.get();
-                    validateInstance(instance, current.getBeanDescriptor());
-                    componentInstances.put(current.getBeanDescriptor(), instance);
+                    addToComponentInstances(current.getBeanDescriptor(), instance);
                 }
             }
         } catch (ComponentInstantiationException e) {
             throw new ContextException("Failed to create instance of bean " + bluePrint.getBeanDescriptor(), e);
         }
+    }
+
+    private void addToComponentInstances(BeanDescriptor<?> descriptor, Object instance) {
+        if (instance == null) {
+            throw new ContextException("The instance of the bean " + descriptor + " was null.");
+        }
+        componentInstances.put(descriptor, instance);
     }
 
     /**
@@ -344,11 +342,5 @@ public class ContextBuilder {
             }
         }
         return Optional.empty();
-    }
-
-    private void validateInstance(Object instance, BeanDescriptor<?> descriptor){
-        if (instance == null) {
-            throw new ContextException("The instance of the bean " + descriptor + " was null.");
-        }
     }
 }
