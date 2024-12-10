@@ -212,9 +212,7 @@ public class ContextBuilder {
     }
 
     private void addToComponentInstances(BeanDescriptor<?> descriptor, Object instance) {
-        if (instance == null) {
-            throw new ContextException("The instance of the bean " + descriptor + " was null.");
-        }
+        validateInstance(descriptor, instance);
         componentInstances.put(descriptor, instance);
     }
 
@@ -326,7 +324,9 @@ public class ContextBuilder {
 
     private Optional<Object> buildIfPossible(BeanBluePrint<?> blueprint) throws ComponentInstantiationException {
         if(blueprint.canBeDependencyLess()) {
-            return Optional.of(blueprint.getNoArgsInstance());
+            var instance = blueprint.getNoArgsInstance();
+            validateInstance(blueprint.getBeanDescriptor(), instance);
+            return Optional.of(instance);
         }
 
         List<? extends BeanConstructor<?>> constructors = blueprint.getConstructors();
@@ -338,9 +338,17 @@ public class ContextBuilder {
                     .map(it -> new Pair<>(it.left(), it.right().get()))
                     .toList();
             if (instances.size() == dependencies.size()) {
-                return Optional.of(blueprint.getInstance(instances));
+                var instance = blueprint.getInstance(instances);
+                validateInstance(blueprint.getBeanDescriptor(), instance);
+                return Optional.of(instance);
             }
         }
         return Optional.empty();
+    }
+
+    private void validateInstance(BeanDescriptor<?> descriptor, Object instance){
+        if (instance == null) {
+            throw new ContextException("The instance of the bean " + descriptor + " is null.");
+        }
     }
 }
