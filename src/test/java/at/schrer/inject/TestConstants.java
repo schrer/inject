@@ -26,6 +26,7 @@ public final class TestConstants {
         String BEANSOURCE_PACKAGE = SAFE_PACKAGE + ".beansource";
         String BEANSOURCEDEP_PACKAGE = SAFE_PACKAGE + ".beansourcedeps";
         String UNNAMED_STRING_PACKAGE = ILLEGAL_PACKAGE + ".unnamedstring";
+        String ERROR_SOURCE_FUN_PACKAGE = ILLEGAL_PACKAGE + ".errorinsourcefun";
     }
 
     public interface ComponentNamesBeanSourcePack {
@@ -42,5 +43,10 @@ public final class TestConstants {
         String TC1 = "one";
         String TC2 = "two";
         String TC3 = "three";
+    }
+
+    public interface ProblemObjects {
+        String PROB1 = "eins";
+        String PROB2 = "zwei";
     }
 }

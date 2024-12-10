@@ -442,4 +442,26 @@ class ContextBuilderTest {
         assertEquals(TestConstants.ComponentNamesBeanSourceDepPack.TC2, inst.tc2().name());
         assertEquals(TestConstants.ComponentNamesBeanSourceDepPack.TC3, inst.tc3().name());
     }
+
+    @Test
+    void getNullObjectFromFunction(){
+        // Given
+        ContextBuilder contextBuilder = ContextBuilder.getContextInstance(ERROR_SOURCE_FUN_PACKAGE);
+
+        // When/Then
+        assertThrows(ContextException.class,
+                () -> contextBuilder.getComponent(TestConstants.ProblemObjects.PROB1, String.class)
+        );
+    }
+
+    @Test
+    void throwErrorDuringCreation(){
+        // Given
+        ContextBuilder contextBuilder = ContextBuilder.getContextInstance(ERROR_SOURCE_FUN_PACKAGE);
+
+        // When/Then
+        assertThrows(ContextException.class,
+                () -> contextBuilder.getComponent(TestConstants.ProblemObjects.PROB2, String.class)
+        );
+    }
 }

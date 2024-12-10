@@ -157,6 +157,7 @@ public class ContextBuilder {
         try {
             if (bluePrint.canBeDependencyLess()) {
                 Object instance = bluePrint.getNoArgsInstance();
+                validateInstance(instance, bluePrint.getBeanDescriptor());
                 componentInstances.put(bluePrint.getBeanDescriptor(), instance);
             }
 
@@ -188,11 +189,13 @@ public class ContextBuilder {
 
                     if (dependency.canBeDependencyLess()) {
                         Object instance = dependency.getNoArgsInstance();
+                        validateInstance(instance, dependency.getBeanDescriptor());
                         componentInstances.put(dependency.getBeanDescriptor(), instance);
                     } else {
                         Optional<Object> depInstanceOpt = buildIfPossible(dependency);
                         if (depInstanceOpt.isPresent()){
                             Object instance = depInstanceOpt.get();
+                            validateInstance(instance, dependency.getBeanDescriptor());
                             componentInstances.put(dependency.getBeanDescriptor(), instance);
                         } else {
                             stack.push(dependency); // Push unresolved dependency onto the stack
@@ -208,12 +211,12 @@ public class ContextBuilder {
                         throw new ContextException("Failed to instantiate " + current.getBeanClass() + ". This is a bug.");
                     }
                     Object instance = instanceOpt.get();
-
+                    validateInstance(instance, current.getBeanDescriptor());
                     componentInstances.put(current.getBeanDescriptor(), instance);
                 }
             }
         } catch (ComponentInstantiationException e) {
-            throw new ContextException("Failed to create instance of class " + bluePrint.getBeanClass().getName(), e);
+            throw new ContextException("Failed to create instance of bean " + bluePrint.getBeanDescriptor(), e);
         }
     }
 
@@ -341,5 +344,11 @@ public class ContextBuilder {
             }
         }
         return Optional.empty();
+    }
+
+    private void validateInstance(Object instance, BeanDescriptor<?> descriptor){
+        if (instance == null) {
+            throw new ContextException("The instance of the bean " + descriptor + " was null.");
+        }
     }
 }

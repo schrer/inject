@@ -35,8 +35,8 @@ public record BeanDescriptor<T>(String beanAlias, Class<T> beanClass) {
 
     @Override
     public String toString(){
-        String nameRepresentation = StringUtils.isBlank(beanAlias) ? "" : beanAlias + " ";
-        String classNameRepresentation = this.beanClass.getName();
+        String nameRepresentation = StringUtils.isBlank(beanAlias) ? "" : "'" + beanAlias + "' ";
+        String classNameRepresentation = "[" + this.beanClass.getName() + "]";
         return nameRepresentation + classNameRepresentation;
     }
 }
