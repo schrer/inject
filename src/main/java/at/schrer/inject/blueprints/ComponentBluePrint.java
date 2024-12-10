@@ -1,8 +1,9 @@
 package at.schrer.inject.blueprints;
 
 import at.schrer.inject.constructors.ComponentConstructor;
-import at.schrer.inject.exceptions.ComponentInstantiationException;
+import at.schrer.inject.exceptions.internal.ComponentInstantiationException;
 import at.schrer.inject.annotations.Component;
+import at.schrer.inject.exceptions.internal.ConstructionInvocationException;
 import at.schrer.inject.structures.Pair;
 import at.schrer.inject.utils.StringUtils;
 
@@ -45,10 +46,14 @@ public class ComponentBluePrint<T> implements BeanBluePrint<T>{
     @Override
     public T getNoArgsInstance() throws ComponentInstantiationException {
         if (noArgConstructor == null) {
-            throw new ComponentInstantiationException("No argument-less constructor available for class " + this.getBeanClass().getName());
+            throw new ComponentInstantiationException("No argument-less constructor available for class " + this.getBeanClass().getName(), beanDescriptor);
         }
 
-        return noArgConstructor.getInstance(List.of());
+        try {
+            return noArgConstructor.getInstance(List.of());
+        } catch (ConstructionInvocationException e) {
+            throw new ComponentInstantiationException(e, beanDescriptor);
+        }
     }
 
     @Override
@@ -57,9 +62,13 @@ public class ComponentBluePrint<T> implements BeanBluePrint<T>{
                 .filter(it -> it.matchesParameters(parameters))
                 .findFirst();
         if (constructor.isEmpty()) {
-            throw new ComponentInstantiationException("No matching constructor found for class " + this.getBeanClass().getName() + " and parameters provided parameters");
+            throw new ComponentInstantiationException("No matching constructor found for bean " + this.beanDescriptor + " and parameters provided parameters", beanDescriptor);
         }
-        return constructor.get().getInstance(parameters);
+        try {
+            return constructor.get().getInstance(parameters);
+        } catch (ConstructionInvocationException e) {
+            throw new ComponentInstantiationException(e, beanDescriptor);
+        }
     }
 
     @Override

@@ -6,7 +6,7 @@ import at.schrer.inject.blueprints.BeanDescriptor;
 import at.schrer.inject.blueprints.ComponentBluePrint;
 import at.schrer.inject.blueprints.FunctionBluePrint;
 import at.schrer.inject.constructors.BeanConstructor;
-import at.schrer.inject.exceptions.ComponentInstantiationException;
+import at.schrer.inject.exceptions.internal.ComponentInstantiationException;
 import at.schrer.inject.exceptions.ContextException;
 import at.schrer.inject.structures.SomeAcyclicGraph;
 import at.schrer.inject.structures.Pair;

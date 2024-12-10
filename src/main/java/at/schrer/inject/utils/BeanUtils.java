@@ -1,7 +1,7 @@
 package at.schrer.inject.utils;
 
 import at.schrer.inject.blueprints.BeanDescriptor;
-import at.schrer.inject.exceptions.ComponentInstantiationException;
+import at.schrer.inject.exceptions.internal.ConstructionInvocationException;
 import at.schrer.inject.structures.Pair;
 
 import java.lang.reflect.Parameter;
@@ -46,9 +46,9 @@ public final class BeanUtils {
      * @param parameters the parameters that dictate the order
      * @return the sorted instances
      */
-    public static Object[] sortMethodParameters(List<Pair<BeanDescriptor<Object>, Object>> instances, Parameter[] parameters) {
+    public static Object[] sortMethodParameters(List<Pair<BeanDescriptor<Object>, Object>> instances, Parameter[] parameters) throws ConstructionInvocationException {
         if (parameters.length != instances.size()) {
-            throw new ComponentInstantiationException("Wrong number of parameters given for this constructor.");
+            throw new ConstructionInvocationException("Wrong number of parameters given for this constructor.");
         }
         Object[] sortedParameters = new Object[parameters.length];
         for (int i = 0; i < parameters.length; i++) {
@@ -60,7 +60,7 @@ public final class BeanUtils {
                 }
             }
             if (sortedParameters[i] == null) {
-                throw new ComponentInstantiationException("Instance of class " + target + " is missing as provided parameter.");
+                throw new ConstructionInvocationException("Instance of class " + target + " is missing as provided parameter.");
             }
         }
         return sortedParameters;

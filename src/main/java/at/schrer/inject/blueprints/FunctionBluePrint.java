@@ -2,7 +2,8 @@ package at.schrer.inject.blueprints;
 
 import at.schrer.inject.constructors.BeanConstructor;
 import at.schrer.inject.constructors.FunctionCunstructor;
-import at.schrer.inject.exceptions.ComponentInstantiationException;
+import at.schrer.inject.exceptions.internal.ComponentInstantiationException;
+import at.schrer.inject.exceptions.internal.ConstructionInvocationException;
 import at.schrer.inject.structures.Pair;
 import at.schrer.inject.utils.StringUtils;
 
@@ -60,11 +61,19 @@ public class FunctionBluePrint implements BeanBluePrint<Object> {
 
     @Override
     public Object getNoArgsInstance() throws ComponentInstantiationException {
-        return this.constructor.getInstance(List.of());
+        try {
+            return this.constructor.getInstance(List.of());
+        } catch (ConstructionInvocationException e) {
+            throw new ComponentInstantiationException(e, beanDescriptor);
+        }
     }
 
     @Override
     public Object getInstance(List<Pair<BeanDescriptor<Object>, Object>> parameters) throws ComponentInstantiationException {
-        return this.constructor.getInstance(parameters);
+        try {
+            return this.constructor.getInstance(parameters);
+        } catch (ConstructionInvocationException e) {
+            throw new ComponentInstantiationException(e, beanDescriptor);
+        }
     }
 }

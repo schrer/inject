@@ -1,7 +1,7 @@
 package at.schrer.inject.constructors;
 
 import at.schrer.inject.blueprints.BeanDescriptor;
-import at.schrer.inject.exceptions.ComponentInstantiationException;
+import at.schrer.inject.exceptions.internal.ConstructionInvocationException;
 import at.schrer.inject.structures.Pair;
 import at.schrer.inject.utils.BeanUtils;
 
@@ -40,7 +40,7 @@ public class FunctionCunstructor<V> implements BeanConstructor<V>{
     }
 
     @Override
-    public V getInstance(List<Pair<BeanDescriptor<Object>, Object>> parameters) {
+    public V getInstance(List<Pair<BeanDescriptor<Object>, Object>> parameters) throws ConstructionInvocationException {
 
         Object[] instances;
         if (parameters.isEmpty()){
@@ -55,7 +55,7 @@ public class FunctionCunstructor<V> implements BeanConstructor<V>{
         try {
             return (V) sourceMethod.invoke(null, instances);
         } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new ComponentInstantiationException(e);
+            throw new ConstructionInvocationException(e);
         }
     }
 }

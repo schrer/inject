@@ -1,7 +1,7 @@
 package at.schrer.inject.blueprints;
 
 import at.schrer.inject.constructors.BeanConstructor;
-import at.schrer.inject.exceptions.ComponentInstantiationException;
+import at.schrer.inject.exceptions.internal.ComponentInstantiationException;
 import at.schrer.inject.structures.Pair;
 
 import java.util.List;
